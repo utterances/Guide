@@ -315,6 +315,7 @@ void draw() {
 	// 	chord_thread = new ChordThread();
 	// 	chord_thread.start();
 	// }
+	tracker.display();
 }
 
 void noteOn(Note note, int device, int channel){
