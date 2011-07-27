@@ -14,7 +14,7 @@ class HandTracker {
 	final int NORMDIST = 76;  	//hand size
 	final int BACKTHRES = 10;	//threshold for background subtraction
 	final int SMOOTHDIST = 70;	//max dist for hand motion smoothing, squared
-	final int SMOOTHFR = 4; 	//uses this many frames for smoothing
+	final int SMOOTHFR = 5; 	//uses this many frames for smoothing
 	final int KEYCOUNT = 61;	//number of keys, roughly, for keyguide
 
 	int CVThreshold = 80; //68
@@ -242,18 +242,18 @@ class HandTracker {
 				}
 			}
 			int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
-			int pitch = Math.round(proj/guidelen*KEYCOUNT);
-			if (oldpit>0 && proj>0 && Math.round(oldpit/guidelen*KEYCOUNT)!=pitch&&lastPitch!=pitch){
-				int velocity = Math.round((vel-60)*2);
-				if (velocity>0) {
-					if (velocity>127) { velocity = 127;}
-					if (pitch<0) { pitch = 0; }
-					Note note = new Note(pitch+21+24,velocity,400);		
-			    	midiOut.sendNote(note);
-					print(str(pitch)+" "+str(velocity)+"\n");
-					lastPitch = pitch;				
-				}
-			}
+			// int pitch = Math.round(proj/guidelen*KEYCOUNT);
+			// if (oldpit>0 && proj>0 && Math.round(oldpit/guidelen*KEYCOUNT)!=pitch&&lastPitch!=pitch){
+			// 	int velocity = Math.round((vel-60)*2);
+			// 	if (velocity>0) {
+			// 		if (velocity>127) { velocity = 127;}
+			// 		if (pitch<0) { pitch = 0; }
+			// 		Note note = new Note(pitch+21+24,velocity,400);		
+			//     	midiOut.sendNote(note);
+			// 		print(str(pitch)+" "+str(velocity)+"\n");
+			// 		lastPitch = pitch;				
+			// 	}
+			// }
 
 			fill(200,200,200,70);
 			ellipse(centX+viewx,centY+viewy,
@@ -281,12 +281,10 @@ class HandTracker {
 			text("mark first point", 0, 60);
 		} else if (markMode == 1) {
 			text("mark second point", 0, 60);
-			fill(204, 102, 100);
-			stroke(100);
+			stroke(color(255,0,0));
 			line(guide1x+viewx,guide1y+viewy,mouseX,mouseY);
 		} else {
-			fill(204, 102, 100);
-			stroke(100);
+			stroke(color(255,0,0));
 			line(guide1x+viewx,guide1y+viewy,guide2x+viewx,guide2y+viewy);		
 		}
 	}

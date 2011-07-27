@@ -238,13 +238,16 @@ void mousePressed() {
 	
 	if (tracker.markMode == 2) {
 		tracker.guide1x = mouseX-SCREENW;
-		tracker.guide1y = mouseY-SCREENW;
+		tracker.guide1y = mouseY;
 		tracker.markMode--;
+		print(str(tracker.guide1x)+ str(tracker.guide1y));
 	} else if (tracker.markMode == 1) {
 		tracker.guide2x = mouseX-SCREENW;
-		tracker.guide2y = mouseY-SCREENW;
+		tracker.guide2y = mouseY;
 		tracker.markMode--;
 		tracker.guidelen = (float) Math.sqrt(Math.pow(tracker.guide2x-tracker.guide1x,2) + Math.pow(tracker.guide2x-tracker.guide1x,2));
+		print(str(tracker.guide2x)+ str(tracker.guide2y));
+		
 	}
 }
 
