@@ -36,6 +36,9 @@ static final int SPOTHI = 30;
 static float FEEDY;
 static final int FEEDH = 20;
 
+static final float SCALE = 2.8;
+static final int XOFF = 150;
+static final int YOFF = -800;
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
 KeyGuide[] feedBar = new KeyGuide[KEYNUM];
@@ -46,7 +49,7 @@ static int MIDIOUTCH;
 static int MIDIINCH;
 
 static int mouseXold;
-	
+static float h1xold,h2xold;	
 // check if we got black key: mod 12: 1, 4, 6, 9, 11
 // white: 0 2 3 5 7 8 10
 // width    1 2 3 4 5 6
@@ -63,7 +66,7 @@ void setup() {
 	float posy_w = SCREENH-keywidth*KEYRATIO_W-1;
 	float posy_b = posy_w -10; //posy_w - keywidth*(KEYRATIO_W-KEYRATIO_B)/2;
 	FEEDY = posy_w-25;
-	int curWhite = 0;
+	int curWhite = 0;	
 	for (int i = 0; i < keys.length; i ++ ) {
 		int scale = i % 12;
 		if (scale==1 || scale==4 || scale==6 || scale==9 || scale==11) {
@@ -82,9 +85,9 @@ void setup() {
 			keyoffset_b+keywidth_b*(i-1)+keywidth_b*(1-KEYWRATIO_B)/2,
 			FEEDY,keywidth_b*KEYWRATIO_B,FEEDH, true);
 		
-		// if (scale==3 || scale==7 || scale==10 || scale==1) {
-		// 	keys[i].isActiveGuide = true;
-		// }
+		if (scale==3 || scale==7 || scale==10 || scale==1) {
+			keys[i].isActiveGuide = true;
+		}
 		// keys[i].isActiveGuide = true;
 	}
 
@@ -323,6 +326,71 @@ void draw() {
 	// }
 	colorMode(RGB,255);
 	tracker.display();
+	
+	// draw hand bubble, if calibration exists
+	if (tracker.guide2x >0) {
+		fill(200,200,200,50);
+		stroke(0);
+		float h1x = tracker.proj1;
+		float h1y = tracker.hand1y.getLast();
+		float h2x = tracker.proj2;
+		float h2y = tracker.hand2y.getLast();
+		
+		h1x = h1x * SCALE + XOFF;
+		h2x = h2x * SCALE + XOFF;
+		h1y = (SCREENH -h1y) * SCALE + YOFF;
+		h2y = (SCREENH -h2y) * SCALE + YOFF;		
+		ellipse(h1x,h1y,
+			Math.max(tracker.vel1*2-120,5),Math.max(tracker.vel1*2-120,5));
+		ellipse(h2x,h2y,
+			Math.max(tracker.vel2*2-120,5),Math.max(tracker.vel2*2-120,5));
+		
+		int vel1 = Math.min((tracker.vel1-80)*2+47,127);
+		int vel2 = Math.min((tracker.vel2-80)*2+47,127);
+		vel1 = Math.max(vel1,20);
+		vel2 = Math.max(vel2,20);
+		
+		//firing notes if they overlap:
+		
+		Note note;
+		for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+			if (!keys[i].isActiveGuide) {
+					continue;
+			}
+			if (abs(keys[i].xpos+keys[i].width/2  - h1x) < keys[i].width/2 &&
+			 	abs(keys[i].xpos+keys[i].width/2 - h1xold) >= keys[i].width/2 
+				&& h1y < SCREENH-30) {
+
+				// int vel = int(mouseY/10f)+20;
+				note = new Note(i+21,vel1,500);
+
+				feedBar[i].height = FEEDH + vel1*2;
+				feedBar[i].ypos = FEEDY - vel1*2;
+				// feedBar[i].isOn = true;
+				print(str(i+21)+" "+str(vel1)+"\n");
+			    midiOut.sendNote(note);
+			}
+			
+			if (abs(keys[i].xpos+keys[i].width/2-h2x) < keys[i].width/2 &&
+			 	abs(keys[i].xpos+keys[i].width/2 - h2xold) >= keys[i].width/2
+				&& h2y < SCREENH-30) {
+
+				// int vel = int(mouseY/10f)+20;
+				note = new Note(i+21,vel2,500);
+
+				feedBar[i].height = FEEDH + vel2*2;
+				feedBar[i].ypos = FEEDY - vel2*2;
+				// feedBar[i].isOn = true;
+
+			    midiOut.sendNote(note);
+			}
+			
+		}
+		
+		
+		h1xold=h1x;
+		h2xold=h2x;
+	}	
 }
 
 void noteOn(Note note, int device, int channel){

@@ -28,6 +28,7 @@ class HandTracker {
 	PImage img, depth, back;
 	float guide1x,guide1y,guide2x,guide2y,guidelen;
 	LinkedList<Float> hand1x, hand1y, hand2x, hand2y;
+	int vel1,vel2;
 	float proj1,proj1p,proj2,proj2p;
 
 	int lowB;	//brightness levels: lower bound
@@ -229,19 +230,23 @@ class HandTracker {
 						(centY-guide1y)*(guide2y-guide1y);
 			proj /= guidelen;
 
-			float oldpit=-1;
+			
+			int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
+			// float oldpit=-1;
+			
 			if (d1>0||d2>0) {
 				if (d1<d2) {
-					oldpit = proj1p;
+					// oldpit = proj1p;
 					proj1p = proj1;
 					proj1 = proj;
+					vel1=vel;
 				} else {
-					oldpit = proj2p;
+					// oldpit = proj2p;
 					proj2p = proj2;
 					proj2 = proj;
+					vel2=vel;
 				}
 			}
-			int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
 			// int pitch = Math.round(proj/guidelen*KEYCOUNT);
 			// if (oldpit>0 && proj>0 && Math.round(oldpit/guidelen*KEYCOUNT)!=pitch&&lastPitch!=pitch){
 			// 	int velocity = Math.round((vel-60)*2);
