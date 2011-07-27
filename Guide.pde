@@ -53,7 +53,7 @@ static int mouseXold;
 // piano 88 keys, 36 black, 52 white
 
 void setup() {
-	colorMode(HSB,100);
+	// colorMode(HSB,100);
 	size(SCREENWTOTAL,SCREENH);
 	background(0);
 	smooth();
@@ -117,8 +117,6 @@ void setup() {
 	// chord_thread.start();
 	
 	// ------------------------------initialize kinect:
-	NativeKinect.init();
-	NativeKinect.start();
 	OpenCV ocv = new OpenCV( this );
 	tracker	= new HandTracker(SCREENW,0, ocv);
 }
@@ -251,6 +249,8 @@ void mousePressed() {
 }
 
 void draw() {
+	colorMode(HSB,100);
+	
 	// mouse test: find which key the mouse is on top of
 	for (int i = 0; i < keys.length; i ++ ) {
 		if (keys[i].isWhite) {
@@ -314,11 +314,12 @@ void draw() {
 		// chord_thread.fresh=false;
 			// rectMode(CORNERS); //rectMode(CENTER);
 		rect(SCREENW/2,0,400,40);
-		fill(color(0,0,100));
+		// fill(color(0,0,100));
 		// text(chord_thread.outString,SCREENW/2,30);
 			// chord_thread.updateChord(chordSet);
-	// }		
-	tracker.display(NativeKinect.getDepthMap());
+	// }
+	colorMode(RGB,255);
+	tracker.display();
 }
 
 void noteOn(Note note, int device, int channel){
