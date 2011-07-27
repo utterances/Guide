@@ -115,6 +115,10 @@ void setup() {
 	
 	// chord_thread = new ChordThread();
 	// chord_thread.start();
+	
+	// ------------------------------initialize kinect:
+	NativeKinect.init();
+	NativeKinect.start();
 	OpenCV ocv = new OpenCV( this );
 	tracker	= new HandTracker(SCREENW,0, ocv);
 }
@@ -314,8 +318,7 @@ void draw() {
 		// text(chord_thread.outString,SCREENW/2,30);
 			// chord_thread.updateChord(chordSet);
 	// }		
-	
-	tracker.display();
+	tracker.display(NativeKinect.getDepthMap());
 }
 
 void noteOn(Note note, int device, int channel){

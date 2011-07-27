@@ -10,7 +10,7 @@ class HandTracker {
 	final int minCVDetectArea = 1300;
 	final int maxCVDetectArea = 38400;
 	final int maxNumBlobs = 3;
-	final int BACKFRAMES = 40;	//how many frames to use to build background
+	final int BACKFRAMES = 10;	//how many frames to use to build background
 	final int NORMDIST = 70;  	//hand size
 	final int BACKTHRES = 10;	//threshold for background subtraction
 	final int SMOOTHDIST = 70;	//max dist for hand motion smoothing, squared
@@ -44,9 +44,6 @@ class HandTracker {
 	int viewx,viewy;
 	
 	HandTracker(int xpos, int ypos, OpenCV newopencv) { 
-		// ------------------------------initialize kinect:
-		NativeKinect.init();
-		NativeKinect.start();
 
 		// img = createImage(640,480,RGB);
 		depth = createImage(640,480,RGB);
@@ -68,10 +65,10 @@ class HandTracker {
 		viewy = ypos;
 	}
 	
-	void display() {
-		depth.pixels = NativeKinect.getDepthMap();
+	void display(color[] pixellist) {
+		depth.pixels = pixellist; //NativeKinect.getDepthMap();
 		depth.updatePixels();
-		image(depth,viewx,viewy,640,480);
+		// image(depth,viewx,viewy,640,480);
 
 		if (backCollect>0) {
 			back.loadPixels();
@@ -88,15 +85,13 @@ class HandTracker {
 					back.pixels[i] = color(r,g,b);
 					// back.pixels[i] = (back.pixels[i] + depth.pixels[i])/2;
 				}	
+				print(str(fCount)+" ");
+				
 			}
-			print(".");
-			// print(str(red(back.pixels[10]))+" "+str(red(depth.pixels[10])));
+			print(str(red(back.pixels[10]))+" "+str(red(depth.pixels[10])));
 			backCollect--;
-			// if (backCollect ==0) {
-			// 		back.updatePixels();
-			// 		opencv.copy(back);
-			// 	}
 			back.updatePixels();
+			print(".\n");
 		}
 
 		for (int i=0; i<depth.pixels.length; i++){
@@ -112,15 +107,11 @@ class HandTracker {
 			// }
 			depth.updatePixels();
 		}
-		// image(depth,640,0,640,480);
+		image(back,viewx,viewy,640,480);
 
-		// image(opencv.image(OpenCV.MEMORY),1280,0,640,480);
 		// image(back,1280,0,640,480);
 
 		opencv.copy(depth);
-		// opencv.absDiff();
-		// opencv.copy(img);
-		// opencv.threshold(CVThreshold);
 		if (thre) {
 			opencv.threshold(CVThreshold);		
 		}
@@ -136,15 +127,6 @@ class HandTracker {
 				if (blobs[i].points[j].y > maxY) {
 					maxY = blobs[i].points[j].y;
 				}
-				// if (blobs[i].points[j].y < minY || minY <0){
-				// 	minY = blobs[i].points[j].y;				
-				// }
-				// if (blobs[i].points[j].x > maxX){
-				// 	maxX = blobs[i].points[j].y;				
-				// }	
-				// if (blobs[i].points[j].y < minX || minX <0){
-				// 	minX = blobs[i].points[j].x;				
-				// }
 			}
 
 			fill(204, 102, 0);
@@ -152,7 +134,7 @@ class HandTracker {
 			int c = 0;
 			for( int j=0; j<blobs[i].points.length; j++ ) {
 				if (maxY - blobs[i].points[j].y < NORMDIST) {
-					vertex( blobs[i].points[j].x, blobs[i].points[j].y );				
+					vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );				
 					centX+=blobs[i].points[j].x;
 					centY+=blobs[i].points[j].y;
 					c++;
