@@ -43,7 +43,7 @@ class HandTracker {
 	float oldHeight;
 	int viewx,viewy;
 	
-	HandTracker(int xpos, int ypos) { 
+	HandTracker(int xpos, int ypos, OpenCV newopencv) { 
 		// ------------------------------initialize kinect:
 		NativeKinect.init();
 		NativeKinect.start();
@@ -52,7 +52,7 @@ class HandTracker {
 		depth = createImage(640,480,RGB);
 		back = createImage(640,480,RGB);
 
-		opencv = new OpenCV( this );
+		opencv = newopencv;
 		// opencv.capture( 640, 480 );
 		opencv.allocate(640,480);
 		hand1x = new LinkedList<Float>();

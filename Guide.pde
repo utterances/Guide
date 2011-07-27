@@ -1,6 +1,10 @@
 import promidi.*;
 import java.io.*;
 
+import king.kinect.*;
+import hypermedia.video.*;
+import java.util.LinkedList;
+
 ChordThread chord_thread;
 HandTracker tracker;
 
@@ -109,10 +113,10 @@ void setup() {
 	midiIO.openInput(MIDIINCH,0);
 	midiOut = midiIO.getMidiOut(MIDIOUTCH,0);
 	
-	chord_thread = new ChordThread();
-	chord_thread.start();
-	
-	tracker	= new HandTracker(SCREENW,0);
+	// chord_thread = new ChordThread();
+	// chord_thread.start();
+	OpenCV ocv = new OpenCV( this );
+	tracker	= new HandTracker(SCREENW,0, ocv);
 }
 
 void keyPressed() {
@@ -125,11 +129,11 @@ void keyPressed() {
 	} else {
 		if (key == 116) {
 			tracker.thre = !tracker.thre;
-			print(thre);
+			print(tracker.thre);
 		} else if (key == 'b') {
 			// do background
 			if (tracker.backCollect == 0) {
-				tracker.backCollect = BACKFRAMES;				
+				tracker.backCollect = tracker.BACKFRAMES;				
 			}
 		} else if (key =='m') {
 			if (tracker.markMode == 0){
@@ -230,15 +234,15 @@ void mousePressed() {
 	// 	}
 	// }
 	
-	if (markMode == 2) {
+	if (tracker.markMode == 2) {
 		tracker.guide1x = mouseX-SCREENW;
 		tracker.guide1y = mouseY-SCREENW;
-		markMode--;
-	} else if (markMode == 1) {
+		tracker.markMode--;
+	} else if (tracker.markMode == 1) {
 		tracker.guide2x = mouseX-SCREENW;
 		tracker.guide2y = mouseY-SCREENW;
-		markMode--;
-		guidelen = (float) Math.sqrt(Math.pow(guide2x-guide1x,2) + Math.pow(guide2x-guide1x,2));
+		tracker.markMode--;
+		tracker.guidelen = (float) Math.sqrt(Math.pow(tracker.guide2x-tracker.guide1x,2) + Math.pow(tracker.guide2x-tracker.guide1x,2));
 	}
 }
 
@@ -307,14 +311,10 @@ void draw() {
 			// rectMode(CORNERS); //rectMode(CENTER);
 		rect(SCREENW/2,0,400,40);
 		fill(color(0,0,100));
-		text(chord_thread.outString,SCREENW/2,30);
+		// text(chord_thread.outString,SCREENW/2,30);
 			// chord_thread.updateChord(chordSet);
 	// }		
-	// 	}
-	// 	
-	// 	chord_thread = new ChordThread();
-	// 	chord_thread.start();
-	// }
+	
 	tracker.display();
 }
 
@@ -347,7 +347,7 @@ void noteOn(Note note, int device, int channel){
 	}
 
 	// call for chord recognizer:
-	chord_thread.updateChord(chordSet);
+	// chord_thread.updateChord(chordSet);
 }
 
 void noteOff(Note note, int device, int channel){
