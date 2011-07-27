@@ -36,9 +36,9 @@ static final int SPOTHI = 30;
 static float FEEDY;
 static final int FEEDH = 20;
 
-static final float SCALE = 2.8;
-static final int XOFF = 150;
-static final int YOFF = -800;
+static final float SCALE = 3.1;
+static final int XOFF = 110;
+static final int YOFF = -840;
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
 KeyGuide[] feedBar = new KeyGuide[KEYNUM];
@@ -341,9 +341,9 @@ void draw() {
 		h1y = (SCREENH -h1y) * SCALE + YOFF;
 		h2y = (SCREENH -h2y) * SCALE + YOFF;		
 		ellipse(h1x,h1y,
-			Math.max(tracker.vel1*2-120,5),Math.max(tracker.vel1*2-120,5));
+			Math.max(tracker.vel1*3-180,5),Math.max(tracker.vel1*3-180,5));
 		ellipse(h2x,h2y,
-			Math.max(tracker.vel2*2-120,5),Math.max(tracker.vel2*2-120,5));
+			Math.max(tracker.vel2*3-180,5),Math.max(tracker.vel2*3-180,5));
 		
 		int vel1 = Math.min((tracker.vel1-80)*2+47,127);
 		int vel2 = Math.min((tracker.vel2-80)*2+47,127);
@@ -359,7 +359,7 @@ void draw() {
 			}
 			if (abs(keys[i].xpos+keys[i].width/2  - h1x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h1xold) >= keys[i].width/2 
-				&& h1y < SCREENH-30) {
+				&& h1y < SCREENH-40) {
 
 				// int vel = int(mouseY/10f)+20;
 				note = new Note(i+21,vel1,500);
@@ -373,7 +373,7 @@ void draw() {
 			
 			if (abs(keys[i].xpos+keys[i].width/2-h2x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h2xold) >= keys[i].width/2
-				&& h2y < SCREENH-30) {
+				&& h2y < SCREENH-40) {
 
 				// int vel = int(mouseY/10f)+20;
 				note = new Note(i+21,vel2,500);
@@ -383,10 +383,8 @@ void draw() {
 				// feedBar[i].isOn = true;
 
 			    midiOut.sendNote(note);
-			}
-			
+			}	
 		}
-		
 		
 		h1xold=h1x;
 		h2xold=h2x;
