@@ -14,7 +14,7 @@ class HandTracker {
 	final int NORMDIST = 76;  	//hand size
 	final int BACKTHRES = 10;	//threshold for background subtraction
 	final int SMOOTHDIST = 70;	//max dist for hand motion smoothing, squared
-	final int SMOOTHFR = 5; 	//uses this many frames for smoothing
+	final int SMOOTHFR = 3; 	//uses this many frames for smoothing
 	final int KEYCOUNT = 61;	//number of keys, roughly, for keyguide
 
 	int CVThreshold = 80; //68

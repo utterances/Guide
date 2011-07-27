@@ -28,16 +28,16 @@ static final float KEYWRATIO_B = .75;
 static final int KEYCLOW = 20;
 
 // spotlight parameters
-static final int SPOTWID1 = 500;//200;
-static final int SPOTWID2 = 400;//140;
-static final int SPOTHI = 30;
+static final int SPOTWID1 = 200;//200;
+static final int SPOTWID2 = 120;//140;
+static final int SPOTHI = 40;
 
 // feedback bar parameters
 static float FEEDY;
 static final int FEEDH = 20;
 
 static final float SCALE = 3.1;
-static final int XOFF = 110;
+static final int XOFF = 100;
 static final int YOFF = -840;
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
@@ -153,55 +153,55 @@ void keyPressed() {
 	}
 }
 
-void mouseMoved() {
-	for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-		// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
-		// 	abs(keys[i].ypos - mouseY) < keys[i].height/2) {
-		// 	keys[i].temp = 60;
-		// // } else {
-		// 	// keys[i].temp = 20;
-		// }
-		if (!keys[i].isActiveGuide) {
-			continue;
-		}
-		int dist = int(abs(keys[i].xpos - mouseX));
-		if (dist < SPOTWID1) {
-			if (dist < SPOTWID2) {
-				keys[i].curB = int(keys[i].lowB +SPOTHI);
-			} else {
-				keys[i].curB = int(keys[i].lowB +
-				 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
-			}
-		} else {
-			keys[i].curB = keys[i].lowB;
-		}
-	}
-}
+// void mouseMoved() {
+// 	for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+// 		// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
+// 		// 	abs(keys[i].ypos - mouseY) < keys[i].height/2) {
+// 		// 	keys[i].temp = 60;
+// 		// // } else {
+// 		// 	// keys[i].temp = 20;
+// 		// }
+// 		if (!keys[i].isActiveGuide) {
+// 			continue;
+// 		}
+// 		int dist = int(abs(keys[i].xpos - mouseX));
+// 		if (dist < SPOTWID1) {
+// 			if (dist < SPOTWID2) {
+// 				keys[i].curB = int(keys[i].lowB +SPOTHI);
+// 			} else {
+// 				keys[i].curB = int(keys[i].lowB +
+// 				 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
+// 			}
+// 		} else {
+// 			keys[i].curB = keys[i].lowB;
+// 		}
+// 	}
+// }
 
 void mouseDragged() {		
 	// fire active notes while we glide
-	for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-		// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
-		// 	abs(keys[i].ypos - mouseY) < keys[i].height/2) {
-		// 	keys[i].temp = 60;
-		// // } else {
-		// 	// keys[i].temp = 20;
-		// }
-		if (!keys[i].isActiveGuide) {
-			continue;
-		}
-		int dist = int(abs(keys[i].xpos - mouseX));
-		if (dist < SPOTWID1) {
-			if (dist < SPOTWID2) {
-				keys[i].curB = int(keys[i].lowB +SPOTHI);
-			} else {
-				keys[i].curB = int(keys[i].lowB +
-				 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
-			}
-		} else {
-			keys[i].curB = keys[i].lowB;
-		}
-	}
+	// for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+	// 	// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
+	// 	// 	abs(keys[i].ypos - mouseY) < keys[i].height/2) {
+	// 	// 	keys[i].temp = 60;
+	// 	// // } else {
+	// 	// 	// keys[i].temp = 20;
+	// 	// }
+	// 	if (!keys[i].isActiveGuide) {
+	// 		continue;
+	// 	}
+	// 	int dist = int(abs(keys[i].xpos - mouseX));
+	// 	if (dist < SPOTWID1) {
+	// 		if (dist < SPOTWID2) {
+	// 			keys[i].curB = int(keys[i].lowB +SPOTHI);
+	// 		} else {
+	// 			keys[i].curB = int(keys[i].lowB +
+	// 			 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
+	// 		}
+	// 	} else {
+	// 		keys[i].curB = keys[i].lowB;
+	// 	}
+	// }
 	
 	
 	Note note;
@@ -258,11 +258,13 @@ void draw() {
 	colorMode(HSB,100);
 	
 	// mouse test: find which key the mouse is on top of
+	fill(color(0, 0, 0));
+	rect(0,0,SCREENW,SCREENH);
 	for (int i = 0; i < keys.length; i ++ ) {
 		if (keys[i].isWhite) {
 			keys[i].display();
 		}
-		feedBar[i].blackOut();
+		// feedBar[i].blackOut();
 		if (feedBar[i].height > FEEDH && !feedBar[i].isOn) {
 			feedBar[i].height-=4;
 			feedBar[i].ypos +=4; //FEEDY
@@ -281,17 +283,17 @@ void draw() {
 			}
 			continue;
 		}
-		int dist = int(abs(keys[i].xpos - mouseX));
-		if (dist < SPOTWID1) {
-			if (dist < SPOTWID2) {
-				keys[i].curB = int(keys[i].lowB +SPOTHI);
-			} else {
-				keys[i].curB = int(keys[i].lowB +
-				 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
-			}
-		} else {
-			keys[i].curB = keys[i].lowB;
-		}
+		// int dist = int(abs(keys[i].xpos - mouseX));
+		// if (dist < SPOTWID1) {
+		// 	if (dist < SPOTWID2) {
+		// 		keys[i].curB = int(keys[i].lowB +SPOTHI);
+		// 	} else {
+		// 		keys[i].curB = int(keys[i].lowB +
+		// 		 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
+		// 	}
+		// } else {
+		// 	keys[i].curB = keys[i].lowB;
+		// }
 	}
 	
 	// draw staff lines:
@@ -383,7 +385,20 @@ void draw() {
 				// feedBar[i].isOn = true;
 
 			    midiOut.sendNote(note);
-			}	
+			}
+			
+			float dist = Math.min(abs(keys[i].xpos - h1x),
+								abs(keys[i].xpos - h2x));
+			if (dist < SPOTWID1) {
+				if (dist < SPOTWID2) {
+					keys[i].curB = int(keys[i].lowB +SPOTHI);
+				} else {
+					keys[i].curB = int(keys[i].lowB +
+					 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
+				}
+			} else {
+				keys[i].curB = keys[i].lowB;
+			}
 		}
 		
 		h1xold=h1x;
