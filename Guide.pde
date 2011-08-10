@@ -19,8 +19,8 @@ static int SCREENW = 1227;//2005;//2150;
 static int SCREENWTOTAL = SCREENW + 640;
 static final int SCREENH = 500;
 // key dimension, defined by ratio between white key width and heights
-static final int KEYRATIO_W = 6;
-static final float KEYRATIO_B = 3.9; //3.6
+static final int KEYRATIO_W = 7; //6
+static final float KEYRATIO_B = 5.2; //3.9
 
 static final float KEYBORDER_B = .4;
 static final float KEYWRATIO_B = .75;
@@ -341,7 +341,7 @@ void draw() {
 		h1x = h1x * SCALE + XOFF;
 		h2x = h2x * SCALE + XOFF;
 		h1y = (SCREENH -h1y) * SCALE + YOFF;
-		h2y = (SCREENH -h2y) * SCALE + YOFF;		
+		h2y = (SCREENH -h2y) * SCALE + YOFF;
 		ellipse(h1x,h1y,
 			Math.max(tracker.vel1*3-180,5),Math.max(tracker.vel1*3-180,5));
 		ellipse(h2x,h2y,
@@ -355,7 +355,7 @@ void draw() {
 		//firing notes if they overlap:
 		
 		Note note;
-		for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+		for (int i = 0; i < keys.length; i ++ ) {
 			if (!keys[i].isActiveGuide) {
 					continue;
 			}
@@ -364,7 +364,7 @@ void draw() {
 				&& h1y < SCREENH-40) {
 
 				// int vel = int(mouseY/10f)+20;
-				note = new Note(i+21,vel1,500);
+				note = new Note(i+21,vel1,400);
 
 				feedBar[i].height = FEEDH + vel1*2;
 				feedBar[i].ypos = FEEDY - vel1*2;
@@ -378,7 +378,7 @@ void draw() {
 				&& h2y < SCREENH-40) {
 
 				// int vel = int(mouseY/10f)+20;
-				note = new Note(i+21,vel2,500);
+				note = new Note(i+21,vel2,400);
 
 				feedBar[i].height = FEEDH + vel2*2;
 				feedBar[i].ypos = FEEDY - vel2*2;
@@ -414,8 +414,8 @@ void noteOn(Note note, int device, int channel){
 	// print(chordSet);
 	
 	feedBar[pit-21].oldHeight = feedBar[pit-21].height;
-	feedBar[pit-21].height = FEEDH + vel*2;
-	feedBar[pit-21].ypos = FEEDY - vel*2;
+	feedBar[pit-21].height = FEEDH + vel;
+	feedBar[pit-21].ypos = FEEDY - vel;
 	feedBar[pit-21].isOn = true;
 	
 	// activate octaves:

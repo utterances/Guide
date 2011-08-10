@@ -1,4 +1,5 @@
-// draw individual keys, uses a single rect
+// class encapsulating kinect module, uses openCV
+
 import king.kinect.*;
 import hypermedia.video.*;
 import java.util.LinkedList;
@@ -14,7 +15,7 @@ class HandTracker {
 	final int NORMDIST = 76;  	//hand size
 	final int BACKTHRES = 10;	//threshold for background subtraction
 	final int SMOOTHDIST = 70;	//max dist for hand motion smoothing, squared
-	final int SMOOTHFR = 3; 	//uses this many frames for smoothing
+	final int SMOOTHFR = 5; 	//uses this many frames for smoothing
 	final int KEYCOUNT = 61;	//number of keys, roughly, for keyguide
 
 	int CVThreshold = 80; //68
@@ -53,7 +54,6 @@ class HandTracker {
 		back = createImage(640,480,RGB);
 
 		opencv = newopencv;
-		// opencv.capture( 640, 480 );
 		opencv.allocate(640,480);
 		hand1x = new LinkedList<Float>();
 		hand1y = new LinkedList<Float>();
@@ -76,7 +76,6 @@ class HandTracker {
 			back.loadPixels();
 			if (backCollect == BACKFRAMES){
 				arrayCopy(depth.pixels, back.pixels);
-				// print("start");
 			} else {
 				float r,g,b;
 				int fCount = BACKFRAMES - backCollect+1;
@@ -85,18 +84,15 @@ class HandTracker {
 					g = (green(depth.pixels[i]) + green(back.pixels[i])*fCount);
 					b = (blue(depth.pixels[i]) + blue(back.pixels[i])*fCount);
 					back.pixels[i] = color(r/(fCount+1),g/(fCount+1),b/(fCount+1));
-					// back.pixels[i] = (back.pixels[i] + depth.pixels[i])/2;
 				}	
 				// print(str(fCount)+" ");	
 			}
 			// print(str(blue(back.pixels[100]))+" "+str(blue(depth.pixels[100])));
 			backCollect--;
 			if (backCollect == 0) {
-				// back.updatePixels();
 				print("done");
 			}
-			back.updatePixels();
-			
+			back.updatePixels();			
 			print(".");
 		}
 
@@ -108,13 +104,10 @@ class HandTracker {
 			b = blue(depth.pixels[i]) - blue(back.pixels[i]);
 			if (abs(r+g+b) < BACKTHRES) {
 				depth.pixels[i] = color(10);
-			} //else {
-			// 	filtered.pixels[i] = depth.pixels[i];
-			// }
+			}
 			depth.updatePixels();
 		}
 		image(depth,viewx,viewy,640,480);
-
 		// image(back,1280,0,640,480);
 
 		opencv.copy(depth);
