@@ -33,8 +33,9 @@ static final int SPOTWID2 = 120;//140;
 static final int SPOTHI = 40;
 
 // feedback bar parameters
-static float FEEDY;
-static final int FEEDH = 20;
+static float FEEDY;					// location of feed bars, calculated
+static final int FEEDH = 20;		//minimal height
+static final float FEEDRATIO = 0.5; // how high the velocity is shown
 
 static final float SCALE = 3.1;
 static final int XOFF = 100;
@@ -54,6 +55,8 @@ static float h1xold,h2xold;
 // white: 0 2 3 5 7 8 10
 // width    1 2 3 4 5 6
 // piano 88 keys, 36 black, 52 white
+
+LinkedList<MidiNote> song;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -122,6 +125,9 @@ void setup() {
 	// ------------------------------initialize kinect:
 	OpenCV ocv = new OpenCV( this );
 	tracker	= new HandTracker(SCREENW,0, ocv);
+	
+	String file = "/Users/Tim/Documents/Processing/MIDIReader/Clocks - carillon.mid";
+	song = MIDIReader(file);
 }
 
 void keyPressed() {
@@ -414,8 +420,8 @@ void noteOn(Note note, int device, int channel){
 	// print(chordSet);
 	
 	feedBar[pit-21].oldHeight = feedBar[pit-21].height;
-	feedBar[pit-21].height = FEEDH + vel;
-	feedBar[pit-21].ypos = FEEDY - vel;
+	feedBar[pit-21].height = FEEDH + vel*FEEDRATIO;
+	feedBar[pit-21].ypos = FEEDY - vel*FEEDRATIO;
 	feedBar[pit-21].isOn = true;
 	
 	// activate octaves:
