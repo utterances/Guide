@@ -1,3 +1,5 @@
+// simply reads a midi file, output a linkedlist with MidiNote structs
+
 import promidi.*;
 import java.io.*;
 import javax.sound.midi.MidiSystem;
@@ -131,7 +133,6 @@ LinkedList<MidiNote> MIDIReader(String filepath) {
 					// print("Other message: " + message.getClass());
 				}
 			}
-			print("---------------------------------------------------------------------------");
 		}
 	}
 	for (MidiNote m : allNotes) {
