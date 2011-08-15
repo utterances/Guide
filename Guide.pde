@@ -57,6 +57,8 @@ static float h1xold,h2xold;
 // piano 88 keys, 36 black, 52 white
 
 LinkedList<MidiNote> song;
+MidiDisplay songGuide;
+boolean songPlaying;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -126,8 +128,14 @@ void setup() {
 	OpenCV ocv = new OpenCV( this );
 	tracker	= new HandTracker(SCREENW,0, ocv);
 	
+	// ------------------------------initialize MIDI guide
 	String file = "/Users/Tim/Documents/Processing/MIDIReader/Clocks - carillon.mid";
 	song = MIDIReader(file);
+	songGuide = new MidiDisplay(song, 
+								keyoffset_b, 
+								0.0, FEEDY-FEEDH, 
+								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
+	songPlaying = false;
 }
 
 void keyPressed() {
@@ -155,6 +163,8 @@ void keyPressed() {
 			tracker.hand1y.clear();
 			tracker.hand2x.clear();
 			tracker.hand2y.clear();
+		} else if (key =='p') {
+			songPlaying=!songPlaying;
 		}
 	}
 }
@@ -266,6 +276,10 @@ void draw() {
 	// mouse test: find which key the mouse is on top of
 	fill(color(0, 0, 0));
 	rect(0,0,SCREENW,SCREENH);
+	songGuide.display();
+	if (songPlaying) {
+		songGuide.forward(.05);
+	}
 	for (int i = 0; i < keys.length; i ++ ) {
 		if (keys[i].isWhite) {
 			keys[i].display();
