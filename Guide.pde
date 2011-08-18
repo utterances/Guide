@@ -19,8 +19,8 @@ static int SCREENW = 1227;//2005;//2150;
 static int SCREENWTOTAL = SCREENW + 640;
 static final int SCREENH = 500;
 // key dimension, defined by ratio between white key width and heights
-static final int KEYRATIO_W = 7; //6
-static final float KEYRATIO_B = 5.2; //3.9
+static final int KEYRATIO_W = 6; //6
+static final float KEYRATIO_B = 4; //3.9
 
 static final float KEYBORDER_B = .4;
 static final float KEYWRATIO_B = .75;
@@ -34,12 +34,12 @@ static final int SPOTHI = 40;
 
 // feedback bar parameters
 static float FEEDY;					// location of feed bars, calculated
-static final int FEEDH = 20;		//minimal height
-static final float FEEDRATIO = 0.5; // how high the velocity is shown
+static final int FEEDH = 10;		//minimal height
+static final float FEEDRATIO = 0.2; // how high the velocity is shown
 
 static final float SCALE = 3.1;
 static final int XOFF = 100;
-static final int YOFF = -840;
+static final int YOFF = -600;
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
 KeyGuide[] feedBar = new KeyGuide[KEYNUM];
@@ -50,7 +50,8 @@ static int MIDIOUTCH;
 static int MIDIINCH;
 
 static int mouseXold;
-static float h1xold,h2xold;	
+static float h1xold,h2xold;
+static boolean useFeedbackBar;
 // check if we got black key: mod 12: 1, 4, 6, 9, 11
 // white: 0 2 3 5 7 8 10
 // width    1 2 3 4 5 6
@@ -62,6 +63,7 @@ boolean songPlaying;
 
 void setup() {
 	// colorMode(HSB,100);
+	useFeedbackBar = true;
 	size(SCREENWTOTAL,SCREENH);
 	background(0);
 	smooth();
@@ -70,8 +72,8 @@ void setup() {
 	float keyoffset_b = 2*(keywidth-keywidth_b);
 	float posy_w = SCREENH-keywidth*KEYRATIO_W-1;
 	float posy_b = posy_w -10; //posy_w - keywidth*(KEYRATIO_W-KEYRATIO_B)/2;
-	FEEDY = posy_w-25;
-	int curWhite = 0;	
+	FEEDY = posy_w-10;
+	int curWhite = 0;
 	for (int i = 0; i < keys.length; i ++ ) {
 		int scale = i % 12;
 		if (scale==1 || scale==4 || scale==6 || scale==9 || scale==11) {
@@ -133,7 +135,7 @@ void setup() {
 	song = MIDIReader(file);
 	songGuide = new MidiDisplay(song, 
 								keyoffset_b, 
-								0.0, FEEDY-FEEDH, 
+								10.0, FEEDY-FEEDH, 
 								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	songPlaying = false;
 }
@@ -234,8 +236,12 @@ void mouseDragged() {
 			int vel = int(mouseY/10f)+20;
 			note = new Note(i+21,vel,300);
 			
-			feedBar[i].height = FEEDH + vel*2;
-			feedBar[i].ypos = FEEDY - vel*2;
+			if (useFeedbackBar) {
+				feedBar[i].height = FEEDH + vel*FEEDRATIO;
+				feedBar[i].ypos = FEEDY - vel*FEEDRATIO;				
+			} else {
+				feedBar[i].curB = feedBar[i].lowB+vel/128 * 100;
+			}
 			// feedBar[pit-21].isOn = true;
 			
 		    midiOut.sendNote(note);
@@ -278,7 +284,7 @@ void draw() {
 	rect(0,0,SCREENW,SCREENH);
 	songGuide.display();
 	if (songPlaying) {
-		songGuide.forward(.05);
+		songGuide.forward(.03);
 	}
 	for (int i = 0; i < keys.length; i ++ ) {
 		if (keys[i].isWhite) {
@@ -288,6 +294,8 @@ void draw() {
 		if (feedBar[i].height > FEEDH && !feedBar[i].isOn) {
 			feedBar[i].height-=4;
 			feedBar[i].ypos +=4; //FEEDY
+		} else if (!useFeedbackBar && feedBar[i].curB > feedBar[i].lowB) {
+			feedBar[i].curB -=2;
 		}
 		feedBar[i].display();			
 	}
@@ -338,10 +346,10 @@ void draw() {
 
 
 	// if (chord_thread.fresh) {
-		fill(color(0, 0, 0));
+		// fill(color(0, 0, 0));
 		// chord_thread.fresh=false;
 			// rectMode(CORNERS); //rectMode(CENTER);
-		rect(SCREENW/2,0,400,40);
+		// rect(SCREENW/2,0,400,40);
 		// fill(color(0,0,100));
 		// text(chord_thread.outString,SCREENW/2,30);
 			// chord_thread.updateChord(chordSet);
