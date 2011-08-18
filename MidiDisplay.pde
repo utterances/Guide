@@ -3,6 +3,7 @@
 // -------------------------------parameters------------------------------------
 
 private static final float RANGE = 5;	//how many bars to show
+private static final float GUIDERANGE = 3; //show guidance for these notes
 private static final float PERSRATIO = 0.8;	//display tilt perspective, 1 = isometric
 private static final float OVERTIME = 0.5;	//show this much after finish line
 
@@ -12,7 +13,7 @@ class MidiDisplay {
 	float currentTick;
 	final float keywidth, spacing;
 	final int alpha;
-	
+	List guideNotes;
 	
 	MidiDisplay(LinkedList<MidiNote> newSong, float xpos, float ypos, float height, float noteW, float notespacing) {
 		song = newSong;
@@ -23,21 +24,33 @@ class MidiDisplay {
 		spacing = notespacing;
 		currentTick = -4;
 		alpha = 90;
-		// print(h+"\n");
+		guideNotes = new ArrayList(); 
 	}
 		
 	void display() {
 		
 		// draw grids for each beat
-		stroke(color(20,0,100,alpha-60));
+		fill(color(0,0,100,10));
 		float offBeat = currentTick - (float)Math.floor(currentTick);
+		for (int i=0;i < 88;i++) {
+			int scale = i % 12;
+			if (!(scale==1 || scale==4 || scale==6 || scale==9 || scale==11)) {
+				noStroke();
+				rect(x+i*keywidth, y, keywidth, h);
+			}
+			// float liney = y + (offBeat + i)/RANGE*h;
+			stroke(color(20,0,100,alpha-70));			
+			line(x+i*keywidth, y, x+i*keywidth, y+h);
+		}
 		for (int i=0;i < RANGE;i++) {
 			float liney = y + (offBeat + i)/RANGE*h;
 			line(x-keywidth, liney, x+88*keywidth, liney);
 		}
 		
+		
 		// draw notes
 		noStroke();
+		guideNotes.clear();
 		for (MidiNote n : song) {
 			if ((n.onTick > currentTick && n.onTick < currentTick+RANGE) ||
 			 	(n.offTick > currentTick && n.offTick < currentTick+RANGE)){
@@ -47,7 +60,7 @@ class MidiDisplay {
 				float y2 = (currentTick+RANGE-n.offTick)/RANGE*h;
 				if (y1>h) { y1=h; }
 				if (y2<0) { y2=0; }
-				if ( (n.onTick<=currentTick + OVERTIME) &&
+				if ((n.onTick<=currentTick + OVERTIME) &&
 					(n.offTick > currentTick + OVERTIME)){
 					fill(color(20,80,100));
 				} else {
@@ -58,7 +71,14 @@ class MidiDisplay {
 					y+y2,
 					keywidth-spacing*2,
 					y1-y2);
-				// print(str(y1)+" "+str(y2)+" "+str(n.pitch)+"\n");
+				if (n.onTick<=currentTick + GUIDERANGE) {
+					guideNotes.add(n.pitch-24);
+					fill(color(0,0,80,80 - (h-y1)/((GUIDERANGE/RANGE)*h)*80));
+					rect(x+keywidth*(n.pitch-24)+spacing,
+						y+y1,
+						keywidth-spacing*2,
+						h-y1);
+				}
 			}
 			if (n.onTick > currentTick + RANGE) {
 				break;

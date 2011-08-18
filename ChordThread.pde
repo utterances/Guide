@@ -106,6 +106,7 @@ public class ChordThread extends Thread {
 			}
 		}
 	}
+
   	// public int getLatest() {
   	//     	return outString;
   	//     }

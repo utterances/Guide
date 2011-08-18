@@ -19,7 +19,7 @@ static int SCREENW = 1227;//2005;//2150;
 static int SCREENWTOTAL = SCREENW + 640;
 static final int SCREENH = 600;
 // key dimension, defined by ratio between white key width and heights
-static final int KEYRATIO_W = 6.2; //6
+static final int KEYRATIO_W = 6; //6
 static final float KEYRATIO_B = 4.2; //3.9
 
 static final float KEYBORDER_B = .4;
@@ -40,6 +40,8 @@ static final float FEEDRATIO = 0.2; // how high the velocity is shown
 static final float SCALE = 3.1;
 static final int XOFF = 100;
 static final int YOFF = -700;
+
+static final float TEMPO = 0.02;
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
 KeyGuide[] feedBar = new KeyGuide[KEYNUM];
@@ -61,6 +63,8 @@ LinkedList<MidiNote> song;
 MidiDisplay songGuide;
 boolean songPlaying;
 boolean playingHarp;
+boolean useChordGuide;
+boolean useMIDIGuide;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -140,6 +144,8 @@ void setup() {
 								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	songPlaying = false;
 	playingHarp = true;
+	useChordGuide = false;
+	useMIDIGuide = true;
 }
 
 void keyPressed() {
@@ -171,6 +177,9 @@ void keyPressed() {
 			songPlaying=!songPlaying;
 		} else if (key =='h') {
 			playingHarp=!playingHarp;
+		} else if (key =='g') {
+			useChordGuide = !useChordGuide;
+			useMIDIGuide = !useMIDIGuide;
 		}
 	}
 }
@@ -200,7 +209,7 @@ void keyPressed() {
 // 	}
 // }
 
-void mouseDragged() {		
+void mouseDragged() {
 	// fire active notes while we glide
 	// for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
 	// 	// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
@@ -286,10 +295,14 @@ void draw() {
 	// mouse test: find which key the mouse is on top of
 	fill(color(0, 0, 0));
 	rect(0,0,SCREENW,SCREENH);
-	songGuide.display();
-	if (songPlaying) {
-		songGuide.forward(.03);
+	if (useMIDIGuide) {
+		songGuide.display();		
+		if (songPlaying) {
+			songGuide.forward(TEMPO);
+		}
 	}
+	// print(songGuide.guideNotes);
+	
 	for (int i = 0; i < keys.length; i ++ ) {
 		if (keys[i].isWhite) {
 			keys[i].display();
@@ -301,7 +314,13 @@ void draw() {
 		} else if (!useFeedbackBar && feedBar[i].curB > feedBar[i].lowB) {
 			feedBar[i].curB -=2;
 		}
-		feedBar[i].display();			
+		feedBar[i].display();
+		if (useMIDIGuide){
+			keys[i].isActiveGuide = songGuide.guideNotes.contains(i-1);
+			// if (songGuide.guideNotes.contains(i)) {
+			// 	print("activating "+i+"\n");				
+			// }
+		}
 	}
 	
 	for (int i = 0; i < keys.length; i ++ ) {
@@ -456,19 +475,21 @@ void noteOn(Note note, int device, int channel){
 	feedBar[pit-21].isOn = true;
 	
 	// activate octaves:
-	for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-		//    keys[i].drive();
-		keys[i].isActiveGuide = false;
-		Iterator chorditer = chordSet.iterator();
-		while(chorditer.hasNext()) {
-			Object n = chorditer.next();
-			int nint =((Number)n).intValue();
-			if (i == nint) { keys[i].isActiveGuide = false; break; }
-			if ((i - nint)%12 == 0) {
-				keys[i].isActiveGuide = true;
-				break;
+	if (useChordGuide) {
+		for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+			//    keys[i].drive();
+			keys[i].isActiveGuide = false;
+			Iterator chorditer = chordSet.iterator();
+			while(chorditer.hasNext()) {
+				Object n = chorditer.next();
+				int nint =((Number)n).intValue();
+				if (i == nint) { keys[i].isActiveGuide = false; break; }
+				if ((i - nint)%12 == 0) {
+					keys[i].isActiveGuide = true;
+					break;
+				}
 			}
-		}
+		}		
 	}
 
 	// call for chord recognizer:
@@ -487,19 +508,20 @@ void noteOff(Note note, int device, int channel){
 		feedBar[pit-21].ypos = FEEDY-feedBar[pit-21].height+FEEDH;
 	}
 	
-	
-	for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-		//    keys[i].drive();
-		keys[i].isActiveGuide = false;
-		Iterator chorditer = chordSet.iterator();
-		while(chorditer.hasNext()) {
-			Object n = chorditer.next();
-			int nint =((Number)n).intValue();
-			if (i == nint) { keys[i].isActiveGuide = false; break; }
-			if ((i - nint)%12 == 0) {
-				keys[i].isActiveGuide = true;
-				break;
+	if (useChordGuide) {
+		for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+			//    keys[i].drive();
+			keys[i].isActiveGuide = false;
+			Iterator chorditer = chordSet.iterator();
+			while(chorditer.hasNext()) {
+				Object n = chorditer.next();
+				int nint =((Number)n).intValue();
+				if (i == nint) { keys[i].isActiveGuide = false; break; }
+				if ((i - nint)%12 == 0) {
+					keys[i].isActiveGuide = true;
+					break;
+				}
 			}
-		}
+		}		
 	}
 }
