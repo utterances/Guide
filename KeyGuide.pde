@@ -36,10 +36,10 @@ class KeyGuide {
 		}
 		if (isWhite) {
 			strokeWeight(1);
-			fill(color(20, sat, curB+8));
+			fill(color(22, sat, curB));
 		} else {
 			strokeWeight(KEYBORDER_B*width);
-			fill(color(20, sat, curB));
+			fill(color(22, sat, curB));
 		}
 		// rectMode(CORNERS); //rectMode(CENTER);
 		rect(xpos,ypos,width,height);

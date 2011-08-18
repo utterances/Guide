@@ -30,7 +30,7 @@ static final int KEYCLOW = 20;
 // spotlight parameters
 static final int SPOTWID1 = 200;//200;
 static final int SPOTWID2 = 120;//140;
-static final int SPOTHI = 40;
+static final int SPOTHI = 60;
 
 // feedback bar parameters
 static float FEEDY;					// location of feed bars, calculated
@@ -41,7 +41,8 @@ static final float SCALE = 3.1;
 static final int XOFF = 100;
 static final int YOFF = -700;
 
-static final float TEMPO = 0.02;
+static float TEMPO = 0.03;
+
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
 KeyGuide[] feedBar = new KeyGuide[KEYNUM];
@@ -137,6 +138,11 @@ void setup() {
 	
 	// ------------------------------initialize MIDI guide
 	String file = "/Users/Tim/Documents/Processing/MIDIReader/Clocks - carillon.mid";
+	
+	// "/Users/Tim/Documents/Scores/Carillon - Sjef van Balkom.mid";
+	 //"/Users/Tim/Documents/Processing/MIDIReader/Faure_pavane.mid";
+	
+	
 	song = MIDIReader(file);
 	songGuide = new MidiDisplay(song, 
 								keyoffset_b, 
@@ -151,9 +157,11 @@ void setup() {
 void keyPressed() {
 	if (key == CODED) {
 		if (keyCode == UP) {
-			tracker.CVThreshold += 1;
+			// tracker.CVThreshold += 1;
+			TEMPO += 0.001;
 		} else if (keyCode == DOWN) {
-			tracker.CVThreshold -= 1;
+			// tracker.CVThreshold -= 1;
+			TEMPO -= 0.001;
 		} 
 	} else {
 		if (key == 116) {

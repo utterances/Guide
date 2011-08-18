@@ -2,7 +2,7 @@
 
 // -------------------------------parameters------------------------------------
 
-private static final float RANGE = 5;	//how many bars to show
+private static final float RANGE = 8;	//how many bars to show
 private static final float GUIDERANGE = 3; //show guidance for these notes
 private static final float PERSRATIO = 0.8;	//display tilt perspective, 1 = isometric
 private static final float OVERTIME = 0.5;	//show this much after finish line
@@ -30,10 +30,10 @@ class MidiDisplay {
 	void display() {
 		
 		// draw grids for each beat
-		fill(color(0,0,100,10));
+		fill(color(0,0,100,13));
 		float offBeat = currentTick - (float)Math.floor(currentTick);
 		for (int i=0;i < 88;i++) {
-			int scale = i % 12;
+			int scale = (i+1) % 12;
 			if (!(scale==1 || scale==4 || scale==6 || scale==9 || scale==11)) {
 				noStroke();
 				rect(x+i*keywidth, y, keywidth, h);
@@ -62,21 +62,21 @@ class MidiDisplay {
 				if (y2<0) { y2=0; }
 				if ((n.onTick<=currentTick + OVERTIME) &&
 					(n.offTick > currentTick + OVERTIME)){
-					fill(color(20,80,100));
+					fill(color(20,100,100));
 				} else {
-					fill(color(20,50,50));
+					fill(color(20,60,50));
 				}
 				
-				rect(x+keywidth*(n.pitch-24)+spacing,
+				rect(x+keywidth*(n.pitch-22)+spacing,
 					y+y2,
 					keywidth-spacing*2,
 					y1-y2);
 				if (n.onTick<=currentTick + GUIDERANGE) {
-					guideNotes.add(n.pitch-24);
-					fill(color(0,0,80,80 - (h-y1)/((GUIDERANGE/RANGE)*h)*80));
-					rect(x+keywidth*(n.pitch-24)+spacing,
+					guideNotes.add(n.pitch-22);
+					fill(color(0,0,60,80 - (h-y1)/((GUIDERANGE/RANGE)*h)*80));
+					rect(x+keywidth*(n.pitch-22)+spacing*3,
 						y+y1,
-						keywidth-spacing*2,
+						keywidth-spacing*6,
 						h-y1);
 				}
 			}
@@ -85,7 +85,7 @@ class MidiDisplay {
 			}
 		}
 		// blackout after finish:
-		fill(color(0,0,0,80));
+		fill(color(0,0,0,70));
 		noStroke();
 		float overH = OVERTIME/RANGE*h;
 		rect(x,y+h-overH,88*keywidth,overH);
