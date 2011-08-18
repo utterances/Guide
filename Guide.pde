@@ -17,10 +17,10 @@ static final int KEYNUM = 88;
 static final int WHITEKEYNUM = 52;
 static int SCREENW = 1227;//2005;//2150;
 static int SCREENWTOTAL = SCREENW + 640;
-static final int SCREENH = 500;
+static final int SCREENH = 600;
 // key dimension, defined by ratio between white key width and heights
-static final int KEYRATIO_W = 6; //6
-static final float KEYRATIO_B = 4; //3.9
+static final int KEYRATIO_W = 6.2; //6
+static final float KEYRATIO_B = 4.2; //3.9
 
 static final float KEYBORDER_B = .4;
 static final float KEYWRATIO_B = .75;
@@ -39,7 +39,7 @@ static final float FEEDRATIO = 0.2; // how high the velocity is shown
 
 static final float SCALE = 3.1;
 static final int XOFF = 100;
-static final int YOFF = -600;
+static final int YOFF = -700;
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
 KeyGuide[] feedBar = new KeyGuide[KEYNUM];
@@ -60,6 +60,7 @@ static boolean useFeedbackBar;
 LinkedList<MidiNote> song;
 MidiDisplay songGuide;
 boolean songPlaying;
+boolean playingHarp;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -138,6 +139,7 @@ void setup() {
 								10.0, FEEDY, 
 								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	songPlaying = false;
+	playingHarp = true;
 }
 
 void keyPressed() {
@@ -167,6 +169,8 @@ void keyPressed() {
 			tracker.hand2y.clear();
 		} else if (key =='p') {
 			songPlaying=!songPlaying;
+		} else if (key =='h') {
+			playingHarp=!playingHarp;
 		}
 	}
 }
@@ -383,7 +387,7 @@ void draw() {
 		// send out MIDI expression messages: mod or damper?
 		int newMod = Math.round(Math.max((SCREENH-Math.min(h1y,h2y))/SCREENH*100-20, 0));		
 		midiOut.sendController(new Controller(1, newMod));
-		print(newMod + "\n");
+		// print(newMod + "\n");
 		
 		//firing notes if they overlap:
 		
@@ -394,7 +398,7 @@ void draw() {
 			}
 			if (abs(keys[i].xpos+keys[i].width/2  - h1x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h1xold) >= keys[i].width/2 
-				&& h1y < SCREENH-40) {
+				&& h1y < SCREENH-80 && playingHarp) {
 
 				// int vel = int(mouseY/10f)+20;
 				note = new Note(i+21,vel1,400);
@@ -408,7 +412,7 @@ void draw() {
 			
 			if (abs(keys[i].xpos+keys[i].width/2-h2x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h2xold) >= keys[i].width/2
-				&& h2y < SCREENH-40) {
+				&& h2y < SCREENH-80 && playingHarp) {
 
 				// int vel = int(mouseY/10f)+20;
 				note = new Note(i+21,vel2,400);
