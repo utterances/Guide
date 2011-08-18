@@ -135,7 +135,7 @@ void setup() {
 	song = MIDIReader(file);
 	songGuide = new MidiDisplay(song, 
 								keyoffset_b, 
-								10.0, FEEDY-FEEDH, 
+								10.0, FEEDY, 
 								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	songPlaying = false;
 }
@@ -380,6 +380,11 @@ void draw() {
 		vel1 = Math.max(vel1,20);
 		vel2 = Math.max(vel2,20);
 		
+		// send out MIDI expression messages: mod or damper?
+		int newMod = Math.round(Math.max((SCREENH-Math.min(h1y,h2y))/SCREENH*100-20, 0));		
+		midiOut.sendController(new Controller(1, newMod));
+		print(newMod + "\n");
+		
 		//firing notes if they overlap:
 		
 		Note note;
@@ -397,7 +402,7 @@ void draw() {
 				feedBar[i].height = FEEDH + vel1*2;
 				feedBar[i].ypos = FEEDY - vel1*2;
 				// feedBar[i].isOn = true;
-				print(str(i+21)+" "+str(vel1)+"\n");
+				// print(str(i+21)+" "+str(vel1)+"\n");
 			    midiOut.sendNote(note);
 			}
 			
@@ -411,7 +416,7 @@ void draw() {
 				feedBar[i].height = FEEDH + vel2*2;
 				feedBar[i].ypos = FEEDY - vel2*2;
 				// feedBar[i].isOn = true;
-
+				
 			    midiOut.sendNote(note);
 			}
 			

@@ -13,6 +13,7 @@ class MidiDisplay {
 	final float keywidth, spacing;
 	final int alpha;
 	
+	
 	MidiDisplay(LinkedList<MidiNote> newSong, float xpos, float ypos, float height, float noteW, float notespacing) {
 		song = newSong;
 		x = xpos;
@@ -49,7 +50,6 @@ class MidiDisplay {
 				if ( (n.onTick<=currentTick + OVERTIME) &&
 					(n.offTick > currentTick + OVERTIME)){
 					fill(color(20,80,100));
-					print("ON\n");
 				} else {
 					fill(color(20,50,50));
 				}
