@@ -10,14 +10,14 @@ class HandTracker {
 
 	final int minCVDetectArea = 1300;
 	final int maxCVDetectArea = 38400;
-	final int maxNumBlobs = 2;
+	final int maxNumBlobs = 3;
 	final int BACKFRAMES = 30;	//how many frames to use to build background
-	final int NORMDIST = 76;  	//hand size
+	final int NORMDIST = 106;  	//hand size
 	final int BACKTHRES = 10;	//threshold for background subtraction
 	final int SMOOTHDIST = 70;	//max dist for hand motion smoothing, squared
 	final int SMOOTHFR = 5; 	//uses this many frames for smoothing
-	final int KEYCOUNT = 61;	//number of keys, roughly, for keyguide
-
+	// final int KEYCOUNT = 61;	//number of keys, roughly, for keyguide
+	
 	int CVThreshold = 80; //68
 	int markMode = 0;
 	int backCollect = 20;
@@ -29,7 +29,7 @@ class HandTracker {
 	PImage img, depth, back;
 	float guide1x,guide1y,guide2x,guide2y,guidelen;
 	LinkedList<Float> hand1x, hand1y, hand2x, hand2y;
-	int vel1,vel2;
+	int vel1,vel2,wid1,wid2; //velocity/pixel value and hand size
 	float proj1,proj1p,proj2,proj2p;
 
 	int lowB;	//brightness levels: lower bound
@@ -123,38 +123,46 @@ class HandTracker {
 
 			// filter/normalize blob first:
 			float centX = 0, centY = 0;
-			float maxX = -1, minX = -1, maxY = -1, minY = -1;
+			int maxX = -1, minX = -1, maxY = -1, minY = -1;
 			for( int j=0; j<blobs[i].points.length; j++ ) {
 				if (blobs[i].points[j].y > maxY) {
 					maxY = blobs[i].points[j].y;
 				}
 			}
-
-			fill(204, 102, 0);
+			
+			// draw hand blobs
+			fill(204, 102, 0, 45);
+			noStroke();
 			beginShape();
 			int cx=0, cy=0;
 			for( int j=0; j<blobs[i].points.length; j++ ) {
 				if (maxY - blobs[i].points[j].y < NORMDIST) {
-					vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );				
+					
+					float hx = SCREENW - blobs[i].points[j].x * SCALE + XOFF;
+					float hy = (SCREENH -blobs[i].points[j].y) * SCALE + YOFF;
+					vertex(hx,hy);
+					
+					// vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );
 					if (maxY - blobs[i].points[j].y < NORMDIST/2) {
-						centX+=blobs[i].points[j].x;
-						cx++;
+						// centX+=blobs[i].points[j].x;
+						// cx++;
+						if (blobs[i].points[j].x > maxX){
+							maxX = blobs[i].points[j].x;
+						}	
+						if (blobs[i].points[j].x < minX || minX <0){
+							minX = blobs[i].points[j].x;				
+						}
 					}
 					// centY+=blobs[i].points[j].y;
 					// cy++;
 					if (blobs[i].points[j].y < minY || minY <0){
 						minY = blobs[i].points[j].y;				
 					}
-					if (blobs[i].points[j].x > maxX){
-						maxX = blobs[i].points[j].x;
-					}	
-					if (blobs[i].points[j].x < minX || minX <0){
-						minX = blobs[i].points[j].x;				
-					}
 				}
 			}
 			endShape(CLOSE);
-			centX/=cx;
+			// centX/=cx;
+			centX=(maxX+minX)/2;
 			// centY/=cy;
 			centY=(maxY+minY)/2;
 			String lab = "N"; 
@@ -166,6 +174,7 @@ class HandTracker {
 				d2 = (float)(Math.pow(hand2x.getLast()-centX,2)
 							+Math.pow(hand2y.getLast()-centY,2));
 				if (d1<d2) {
+					wid1 = maxX - minX;
 					lab = "A ";
 					hand1x.add(centX);
 					hand1y.add(centY);
@@ -188,6 +197,7 @@ class HandTracker {
 					centX= (centX+hand1x.getLast()+dx)/(hand1x.size()+2);
 					centY= (centY+hand1y.getLast()+dy)/(hand1x.size()+2);
 				} else {
+					wid2 = maxX - minX;
 					lab="B ";
 					hand2x.add(centX);
 					hand2y.add(centY);
@@ -224,17 +234,25 @@ class HandTracker {
 			proj /= guidelen;
 
 			
-			int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
-			// float oldpit=-1;
-			
+			// int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
+			int vel = 0;
+			for (int j=minX ; j<maxX; j++ ) {
+				int bright = Math.round(brightness(
+						depth.get(int(j),int(centY))));
+				if (bright >vel) {
+					vel = bright;
+				}
+			}
+			// vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );
+			stroke(color(255,0,0));
+			line(minX+viewx,centY+viewy,maxX+viewx,centY+viewy);
+						
 			if (d1>0||d2>0) {
 				if (d1<d2) {
-					// oldpit = proj1p;
 					proj1p = proj1;
 					proj1 = proj;
 					vel1=vel;
 				} else {
-					// oldpit = proj2p;
 					proj2p = proj2;
 					proj2 = proj;
 					vel2=vel;

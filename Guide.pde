@@ -37,11 +37,14 @@ static float FEEDY;					// location of feed bars, calculated
 static final int FEEDH = 10;		//minimal height
 static final float FEEDRATIO = 0.2; // how high the velocity is shown
 
-static final float SCALE = 3.1;
-static final int XOFF = 100;
-static final int YOFF = -700;
+static final float SCALE = 2.7;
+static final int XOFF = 120;
+static final int YOFF = -770;
 
 static float TEMPO = 0.03;
+
+// skip frames for sending MIDI messages
+static int SKIPFR = 3; //send expression every this many frames
 
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
@@ -60,6 +63,8 @@ static boolean useFeedbackBar;
 // width    1 2 3 4 5 6
 // piano 88 keys, 36 black, 52 white
 
+int skipframes;
+
 LinkedList<MidiNote> song;
 MidiDisplay songGuide;
 boolean songPlaying;
@@ -69,6 +74,7 @@ boolean useMIDIGuide;
 
 void setup() {
 	// colorMode(HSB,100);
+	skipframes = 0;
 	useFeedbackBar = true;
 	size(SCREENWTOTAL,SCREENH);
 	background(0);
@@ -149,19 +155,21 @@ void setup() {
 								10.0, FEEDY, 
 								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	songPlaying = false;
-	playingHarp = true;
-	useChordGuide = false;
-	useMIDIGuide = true;
+	playingHarp = false;
+	useChordGuide = true;
+	useMIDIGuide = false;
 }
 
 void keyPressed() {
 	if (key == CODED) {
 		if (keyCode == UP) {
-			// tracker.CVThreshold += 1;
-			TEMPO += 0.001;
+			tracker.CVThreshold += 1;
+			// TEMPO += 0.001;
+			print(tracker.CVThreshold);
 		} else if (keyCode == DOWN) {
-			// tracker.CVThreshold -= 1;
-			TEMPO -= 0.001;
+			tracker.CVThreshold -= 1;
+			// TEMPO -= 0.001;
+			print(tracker.CVThreshold);
 		} 
 	} else {
 		if (key == 116) {
@@ -389,8 +397,8 @@ void draw() {
 	tracker.display();
 	
 	// draw hand bubble, if calibration exists
-	if (tracker.guide2x >0) {
-		fill(200,200,200,50);
+	if (tracker.guide2x >0 && tracker.proj2!=0) {
+		// fill(200,200,200,50);
 		stroke(0);
 		float h1x = tracker.proj1;
 		float h1y = tracker.hand1y.getLast();
@@ -401,19 +409,39 @@ void draw() {
 		h2x = h2x * SCALE + XOFF;
 		h1y = (SCREENH -h1y) * SCALE + YOFF;
 		h2y = (SCREENH -h2y) * SCALE + YOFF;
-		ellipse(h1x,h1y,
-			Math.max(tracker.vel1*3-180,5),Math.max(tracker.vel1*3-180,5));
-		ellipse(h2x,h2y,
-			Math.max(tracker.vel2*3-180,5),Math.max(tracker.vel2*3-180,5));
 		
+		fill(200,200,200,Math.max(tracker.vel1,5));
+		ellipse(h1x,h1y,tracker.wid1*3,100);
+		fill(200,200,200,Math.max(tracker.vel2,5));
+		ellipse(h2x,h2y,tracker.wid2*3,100);
+			
 		int vel1 = Math.min((tracker.vel1-80)*2+47,127);
 		int vel2 = Math.min((tracker.vel2-80)*2+47,127);
 		vel1 = Math.max(vel1,20);
 		vel2 = Math.max(vel2,20);
 		
-		// send out MIDI expression messages: mod or damper?
-		int newMod = Math.round(Math.max((SCREENH-Math.min(h1y,h2y))/SCREENH*100-20, 0));		
-		midiOut.sendController(new Controller(1, newMod));
+		if (skipframes == 0) {
+		
+			// send out MIDI expression messages: mod or damper?
+			int newMod = Math.round((SCREENH-Math.min(h1y,h2y))/SCREENH*100);
+			newMod = Math.max(Math.min(newMod,127),0);
+			midiOut.sendController(new Controller(1, newMod));
+		
+			// send x axes message?
+			// midiOut.sendController(new Controller(1, newMod));
+		
+			// send width/ open/close hand message?
+			if (h1y<h2y) {
+				newMod = Math.round(tracker.wid1*1.2-10);				
+			} else {
+				newMod = Math.round(tracker.wid2*1.2-10);
+			}
+			// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
+			newMod = Math.max(Math.min(newMod,127),0);
+			midiOut.sendController(new Controller(11, newMod));
+			// print(newMod);
+		}
+		
 		// print(newMod + "\n");
 		
 		//firing notes if they overlap:
@@ -423,7 +451,9 @@ void draw() {
 			if (!keys[i].isActiveGuide) {
 					continue;
 			}
-			if (abs(keys[i].xpos+keys[i].width/2  - h1x) < keys[i].width/2 &&
+			
+			if (skipframes == 0 &&
+				abs(keys[i].xpos+keys[i].width/2  - h1x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h1xold) >= keys[i].width/2 
 				&& h1y < SCREENH-80 && playingHarp) {
 
@@ -436,8 +466,9 @@ void draw() {
 				// print(str(i+21)+" "+str(vel1)+"\n");
 			    midiOut.sendNote(note);
 			}
-			
-			if (abs(keys[i].xpos+keys[i].width/2-h2x) < keys[i].width/2 &&
+		
+			if (skipframes == 0 &&
+				abs(keys[i].xpos+keys[i].width/2-h2x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h2xold) >= keys[i].width/2
 				&& h2y < SCREENH-80 && playingHarp) {
 
@@ -447,7 +478,7 @@ void draw() {
 				feedBar[i].height = FEEDH + vel2*2;
 				feedBar[i].ypos = FEEDY - vel2*2;
 				// feedBar[i].isOn = true;
-				
+			
 			    midiOut.sendNote(note);
 			}
 			
@@ -465,6 +496,7 @@ void draw() {
 			}
 		}
 		
+		skipframes = (skipframes++) % SKIPFR;
 		h1xold=h1x;
 		h2xold=h2x;
 	}	
