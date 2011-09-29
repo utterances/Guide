@@ -31,18 +31,6 @@ class HandTracker {
 	LinkedList<Float> hand1x, hand1y, hand2x, hand2y;
 	int vel1,vel2,wid1,wid2; //velocity/pixel value and hand size
 	float proj1,proj1p,proj2,proj2p;
-
-	int lowB;	//brightness levels: lower bound
-	int curB;	//current brightness
-	float xpos;
-	float ypos;
-	float width;
-	float height;
-	// float xspeed;
-	boolean isWhite;
-	boolean isOn;
-	boolean isActiveGuide;
-	float oldHeight;
 	int viewx,viewy;
 	
 	HandTracker(int xpos, int ypos, OpenCV newopencv) { 

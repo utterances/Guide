@@ -37,9 +37,9 @@ static float FEEDY;					// location of feed bars, calculated
 static final int FEEDH = 10;		//minimal height
 static final float FEEDRATIO = 0.2; // how high the velocity is shown
 
-static final float SCALE = 2.7;
+static final float SCALE = 2.5;
 static final int XOFF = 120;
-static final int YOFF = -770;
+static final int YOFF = -870;
 
 static float TEMPO = 0.03;
 
@@ -397,7 +397,7 @@ void draw() {
 	tracker.display();
 	
 	// draw hand bubble, if calibration exists
-	if (tracker.guide2x >0 && tracker.proj2!=0) {
+	if (tracker.guide2x >0 && (tracker.hand1y.size()>0 && tracker.hand2y.size()>0)) {
 		// fill(200,200,200,50);
 		stroke(0);
 		float h1x = tracker.proj1;
@@ -424,7 +424,7 @@ void draw() {
 		
 			// send out MIDI expression messages: mod or damper?
 			int newMod = Math.round((SCREENH-Math.min(h1y,h2y))/SCREENH*100);
-			newMod = Math.max(Math.min(newMod,127),0);
+			newMod = Math.max(Math.min(newMod+30,127),0);
 			midiOut.sendController(new Controller(1, newMod));
 		
 			// send x axes message?
@@ -437,8 +437,8 @@ void draw() {
 				newMod = Math.round(tracker.wid2*1.2-10);
 			}
 			// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
-			newMod = Math.max(Math.min(newMod,127),0);
-			midiOut.sendController(new Controller(11, newMod));
+			newMod = Math.max(Math.min(newMod-10,127),0);
+			midiOut.sendController(new Controller(12, newMod));
 			// print(newMod);
 		}
 		
