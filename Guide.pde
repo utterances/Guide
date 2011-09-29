@@ -425,7 +425,7 @@ void draw() {
 			// send out MIDI expression messages: mod or damper?
 			int newMod = Math.round((SCREENH-Math.min(h1y,h2y))/SCREENH*100);
 			newMod = Math.max(Math.min(newMod+30,127),0);
-			midiOut.sendController(new Controller(1, newMod));
+			midiOut.sendController(new Controller(12, newMod));
 		
 			// send x axes message?
 			// midiOut.sendController(new Controller(1, newMod));
@@ -438,8 +438,12 @@ void draw() {
 			}
 			// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
 			newMod = Math.max(Math.min(newMod-10,127),0);
-			midiOut.sendController(new Controller(12, newMod));
-			// print(newMod);
+			midiOut.sendController(new Controller(13, newMod));
+			// print(newMod1
+			
+			if (!playingHarp) {
+				midiOut.sendController(new Controller(11, Math.max(vel1,vel2)));
+			}
 		}
 		
 		// print(newMod + "\n");

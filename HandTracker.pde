@@ -259,7 +259,7 @@ class HandTracker {
 			// 	}
 			// }
 
-			fill(200,200,200,70);
+			fill(200,200,200,vel);
 			ellipse(centX+viewx,centY+viewy,
 				Math.max(vel*2-120,5),Math.max(vel*2-120,5));
 			// print(str(vel)+" ");
