@@ -3,6 +3,7 @@
 import king.kinect.*;
 import hypermedia.video.*;
 import java.util.LinkedList;
+import java.util.Date;
 
 class HandTracker { 
 
@@ -11,14 +12,14 @@ class HandTracker {
 	final int minCVDetectArea = 1300;
 	final int maxCVDetectArea = 38400;
 	final int maxNumBlobs = 3;
-	final int BACKFRAMES = 30;	//how many frames to use to build background
+	final int BACKFRAMES = 20;	//how many frames to use to build background
 	final int NORMDIST = 106;  	//hand size
 	final int BACKTHRES = 10;	//threshold for background subtraction
 	final int SMOOTHDIST = 70;	//max dist for hand motion smoothing, squared
-	final int SMOOTHFR = 5; 	//uses this many frames for smoothing
+	final int SMOOTHFR = 7; 	//uses this many frames for smoothing
 	// final int KEYCOUNT = 61;	//number of keys, roughly, for keyguide
 	
-	int CVThreshold = 80; //68
+	int CVThreshold = 93; //80
 	int markMode = 0;
 	int backCollect = 20;
 	boolean thre = true;
@@ -32,12 +33,17 @@ class HandTracker {
 	int vel1,vel2,wid1,wid2; //velocity/pixel value and hand size
 	float proj1,proj1p,proj2,proj2p;
 	int viewx,viewy;
+	boolean on1,on2;
+	boolean streamfile;
+	
+	// -----external setting-----
+	boolean recording;
 	
 	HandTracker(int xpos, int ypos, OpenCV newopencv) { 
 		NativeKinect.init();
 		NativeKinect.start();
 
-		// img = createImage(640,480,RGB);
+		img = createImage(640,480,RGB);
 		depth = createImage(640,480,RGB);
 		back = createImage(640,480,RGB);
 
@@ -54,11 +60,17 @@ class HandTracker {
 		proj2 = -1;
 		viewx = xpos;
 		viewy = ypos;
+		on1= false;
+		on2= false;
+		recording = false;
+		streamfile = false;
 	}
 	
 	void display() {
 		depth.pixels = NativeKinect.getDepthMap();
 		depth.updatePixels();
+		img.pixels = NativeKinect.getVideo();
+		img.updatePixels();
 		// image(depth,viewx,viewy,640,480);
 		if (backCollect>0) {
 			back.loadPixels();
@@ -73,9 +85,8 @@ class HandTracker {
 					b = (blue(depth.pixels[i]) + blue(back.pixels[i])*fCount);
 					back.pixels[i] = color(r/(fCount+1),g/(fCount+1),b/(fCount+1));
 				}	
-				// print(str(fCount)+" ");	
 			}
-			// print(str(blue(back.pixels[100]))+" "+str(blue(depth.pixels[100])));
+
 			backCollect--;
 			if (backCollect == 0) {
 				print("done");
@@ -83,7 +94,16 @@ class HandTracker {
 			back.updatePixels();			
 			print(".");
 		}
-
+		
+		// // ======================== save kinect data ===========================
+		// long now = System.currentTimeMillis();
+		// if (recording) {
+		// 	// Date now = new Date();
+		// 	// long now = System.currentTimeMillis();
+		// 	depth.save("./rec/d"+now+".tga");
+		// 	img.save("./vid/v"+now+".tif");
+		// }
+		
 		for (int i=0; i<depth.pixels.length; i++){
 			depth.loadPixels();
 			float r,g,b;
@@ -96,7 +116,16 @@ class HandTracker {
 			depth.updatePixels();
 		}
 		image(depth,viewx,viewy,640,480);
-		// image(back,1280,0,640,480);
+		
+		// ======================== save kinect data ===========================
+		long now = System.currentTimeMillis();
+		if (recording) {
+			// Date now = new Date();
+			// long now = System.currentTimeMillis();
+			depth.save("./rec/d"+now+".tga");
+			img.save("./vid/v"+now+".tif");
+		}
+		// ========================= end save kinect data ======================
 
 		opencv.copy(depth);
 		if (thre) {
@@ -105,7 +134,8 @@ class HandTracker {
 		// image(opencv.image(),640,0,640,480);
 		
 		strokeWeight(1);
-
+		on1=false;
+		on2=false;
 		Blob[] blobs = opencv.blobs(minCVDetectArea, maxCVDetectArea, maxNumBlobs, false, OpenCV.MAX_VERTICES*4);
 		for( int i=0; i<blobs.length; i++ ) {
 
@@ -184,6 +214,7 @@ class HandTracker {
 					dy/=hand1x.size()-1;
 					centX= (centX+hand1x.getLast()+dx)/(hand1x.size()+2);
 					centY= (centY+hand1y.getLast()+dy)/(hand1x.size()+2);
+					on1 = true;
 				} else {
 					wid2 = maxX - minX;
 					lab="B ";
@@ -207,6 +238,7 @@ class HandTracker {
 					dy/=hand2x.size()-1;
 					centX= (centX+hand2x.getLast()+dx)/(hand2x.size()+2);
 					centY= (centY+hand2y.getLast()+dy)/(hand2x.size()+2);
+					on2 = true;
 				}
 			} else if (hand1x.size()==0){
 				hand1x.add(centX);
@@ -215,12 +247,13 @@ class HandTracker {
 				hand2x.add(centX);
 				hand2y.add(centY);
 			}
-			// project point onto the keyboard guide, then we can get actual notes
+			// project point onto the keyboard guide, to get actual notes/X axis
 			// A dot B / |B|
 			float proj = (centX-guide1x)*(guide2x-guide1x)+
 						(centY-guide1y)*(guide2y-guide1y);
 			proj /= guidelen;
 
+			
 			
 			// int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
 			int vel = 0;
@@ -265,7 +298,7 @@ class HandTracker {
 			// print(str(vel)+" ");
 			// ellipse((maxX+minX)/2+viewx,(maxY+minY)/2+viewy,10,10);
 			fill(230,200,200);
-			text(lab+str(vel)+" "+str(proj),centX+viewx,centY+viewy);
+			text(lab+str(vel)+" "+str(centY),centX+viewx,centY+viewy);
 
 			// beginShape();
 			// for( int j=0; j<blobs[i].points.length; j++ ) {

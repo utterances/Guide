@@ -35,7 +35,7 @@ static final int SPOTHI = 60;
 // feedback bar parameters
 static float FEEDY;					// location of feed bars, calculated
 static final int FEEDH = 10;		//minimal height
-static final float FEEDRATIO = 0.2; // how high the velocity is shown
+static final float FEEDRATIO = 0.4; // how high the velocity is shown
 
 static final float SCALE = 2.5;
 static final int XOFF = 120;
@@ -67,10 +67,7 @@ int skipframes;
 
 LinkedList<MidiNote> song;
 MidiDisplay songGuide;
-boolean songPlaying;
-boolean playingHarp;
-boolean useChordGuide;
-boolean useMIDIGuide;
+boolean songPlaying, playingHarp, useChordGuide, useMIDIGuide;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -149,11 +146,11 @@ void setup() {
 	 //"/Users/Tim/Documents/Processing/MIDIReader/Faure_pavane.mid";
 	
 	
-	song = MIDIReader(file);
-	songGuide = new MidiDisplay(song, 
-								keyoffset_b, 
-								10.0, FEEDY, 
-								keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
+	// song = MIDIReader(file);
+	// songGuide = new MidiDisplay(song, 
+	// 							keyoffset_b, 
+	// 							10.0, FEEDY, 
+	// 							keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	songPlaying = false;
 	playingHarp = false;
 	useChordGuide = true;
@@ -196,6 +193,8 @@ void keyPressed() {
 		} else if (key =='g') {
 			useChordGuide = !useChordGuide;
 			useMIDIGuide = !useMIDIGuide;
+		} else if (key =='r') {
+			tracker.recording = !tracker.recording;
 		}
 	}
 }
@@ -410,10 +409,17 @@ void draw() {
 		h1y = (SCREENH -h1y) * SCALE + YOFF;
 		h2y = (SCREENH -h2y) * SCALE + YOFF;
 		
-		fill(200,200,200,Math.max(tracker.vel1,5));
-		ellipse(h1x,h1y,tracker.wid1*3,100);
-		fill(200,200,200,Math.max(tracker.vel2,5));
-		ellipse(h2x,h2y,tracker.wid2*3,100);
+		if (tracker.on1) {
+			fill(200,200,200,Math.max(tracker.wid1,5));
+			ellipse(h1x,h1y,80,(tracker.vel1-90)*3);
+			text(str(tracker.vel1)+" "+str(tracker.wid1),h1x,h1y);			
+		}
+		
+		if (tracker.on2) {
+			fill(200,200,200,Math.max(tracker.wid2,5));
+			ellipse(h2x,h2y,80,(tracker.vel2-90)*3);
+			text(str(tracker.vel2)+" "+str(tracker.wid2),h2x,h2y);			
+		}
 			
 		int vel1 = Math.min((tracker.vel1-80)*2+47,127);
 		int vel2 = Math.min((tracker.vel2-80)*2+47,127);
@@ -422,27 +428,34 @@ void draw() {
 		
 		if (skipframes == 0) {
 		
-			// send out MIDI expression messages: mod or damper?
-			int newMod = Math.round((SCREENH-Math.min(h1y,h2y))/SCREENH*100);
-			newMod = Math.max(Math.min(newMod+30,127),0);
-			midiOut.sendController(new Controller(12, newMod));
-		
-			// send x axes message?
-			// midiOut.sendController(new Controller(1, newMod));
-		
+			// Y-axis send out MIDI expression messages: mod or damper?
+			float newMod = 
+				Math.max(tracker.hand1y.getLast(),tracker.hand2y.getLast());
+			newMod = Math.max((newMod-30)/2.9,7);
+			midiOut.sendController(new Controller(16, Math.round(newMod)));
+			
+			// X-axis message?
+
 			// send width/ open/close hand message?
-			if (h1y<h2y) {
-				newMod = Math.round(tracker.wid1*1.2-10);				
-			} else {
-				newMod = Math.round(tracker.wid2*1.2-10);
+			if (tracker.on1 || tracker.on2) {
+				if (tracker.hand1y.getLast()>tracker.hand2y.getLast() 
+					&& tracker.on1) {
+					newMod = tracker.wid1*1.2-30;
+				} else {
+					newMod = tracker.wid2*1.2-30;
+				}
+				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
+				newMod = Math.min(Math.max(newMod,0),126);
+				midiOut.sendController(new Controller(17, Math.round(newMod)));				
 			}
-			// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
-			newMod = Math.max(Math.min(newMod-10,127),0);
-			midiOut.sendController(new Controller(13, newMod));
-			// print(newMod1
 			
 			if (!playingHarp) {
-				midiOut.sendController(new Controller(11, Math.max(vel1,vel2)));
+				float h = Math.min(127,
+					Math.max((Math.max(tracker.vel1,tracker.vel2)-100)*2.4,0));
+				
+				midiOut.sendController(new Controller(18, Math.round(h)));
+				// print(h);
+				// print("\n");
 			}
 		}
 		
@@ -503,8 +516,17 @@ void draw() {
 		skipframes = (skipframes++) % SKIPFR;
 		h1xold=h1x;
 		h2xold=h2x;
+	}
+	printLabels();
+}
+
+void printLabels() {
+	if (tracker.recording) {
+		stroke(color(100,100,100));
+		text("Recording",SCREENW/2,30);
 	}	
 }
+
 
 void noteOn(Note note, int device, int channel){
   int vel = note.getVelocity();
