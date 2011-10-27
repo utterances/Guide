@@ -7,6 +7,9 @@ import java.util.Date;
 
 class HandTracker { 
 
+	//----------------------------Recorder paths -------------------------------
+	final String BASEPATH = "/Users/Tim/Documents/Processing/Data/";
+
 	//----------------------------Kinect Parameters-----------------------------
 
 	final int minCVDetectArea = 1300;
@@ -34,7 +37,7 @@ class HandTracker {
 	float proj1,proj1p,proj2,proj2p;
 	int viewx,viewy;
 	boolean on1,on2;
-	boolean streamfile;
+	String streamfile;
 	
 	// -----external setting-----
 	boolean recording;
@@ -63,7 +66,7 @@ class HandTracker {
 		on1= false;
 		on2= false;
 		recording = false;
-		streamfile = false;
+		streamfile = "";
 	}
 	
 	void display() {
@@ -122,8 +125,8 @@ class HandTracker {
 		if (recording) {
 			// Date now = new Date();
 			// long now = System.currentTimeMillis();
-			depth.save("./rec/d"+now+".tga");
-			img.save("./vid/v"+now+".tif");
+			depth.save(BASEPATH + "/rec/d"+now+".tif");
+			img.save(BASEPATH + "/vid/v"+now+".tif");
 		}
 		// ========================= end save kinect data ======================
 
@@ -185,7 +188,7 @@ class HandTracker {
 			centY=(maxY+minY)/2;
 			String lab = "N"; 
 			float d1 = 0, d2 = 0;
-			if (hand1x.size()>0 && hand2x.size()>0) {
+			if (!hand1x.isEmpty() && !hand2x.isEmpty()) {
 				// do smoothing:
 				d1 = (float)(Math.pow(hand1x.getLast()-centX,2)
 							+Math.pow(hand1y.getLast()-centY,2));
@@ -252,8 +255,6 @@ class HandTracker {
 			float proj = (centX-guide1x)*(guide2x-guide1x)+
 						(centY-guide1y)*(guide2y-guide1y);
 			proj /= guidelen;
-
-			
 			
 			// int vel = Math.round(brightness(depth.get(int(centX),int(centY))));
 			int vel = 0;
@@ -307,8 +308,39 @@ class HandTracker {
 			// endShape(CLOSE);
 		}
 		// image(opencv.image(),1280,0,640,480);
-
-		// draw text and other overlay:
+		
+		// ======================== save tracker data ==========================
+		if (recording && !hand1y.isEmpty() && !hand2y.isEmpty()) {
+			print("@");
+			try {
+				if (streamfile.equals("")) {
+					streamfile = BASEPATH + "/track" + now;
+					File file = new File(streamfile);
+					print("create new!");
+					print(streamfile + "\n");
+					boolean exi = file.createNewFile();
+					if (!exi) {
+						print("File already exists.");
+					} else {
+						print("created!\n");
+					}
+				}
+				
+				
+				// File file = new File (streamfile);
+				FileWriter fstream = new FileWriter(streamfile,true);
+				BufferedWriter out = new BufferedWriter(fstream);
+				out.write(now + ":" + hand1x.getLast() + " " + hand1y.getLast()
+				 	+ " "+ vel1 + " " + wid1 + " "	+ hand2x.getLast() + " " +
+				 	hand2y.getLast() + " " vel2 + " " + wid2 + "\n");
+				out.close();				
+			} catch (Exception e){			//Catch exception if any
+				System.err.println("Error: " + e.getMessage());
+			}
+		}
+		
+		
+		// =========================================draw text and other overlay:
 		fill(0,0,0,80);
 		rect(0,0,200,200);
 		fill(230,200,200);

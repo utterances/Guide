@@ -195,7 +195,10 @@ void keyPressed() {
 			useMIDIGuide = !useMIDIGuide;
 		} else if (key =='r') {
 			tracker.recording = !tracker.recording;
-		}
+			if (!tracker.recording) {
+				tracker.streamfile = "";
+			}
+;		}
 	}
 }
 
@@ -396,7 +399,7 @@ void draw() {
 	tracker.display();
 	
 	// draw hand bubble, if calibration exists
-	if (tracker.guide2x >0 && (tracker.hand1y.size()>0 && tracker.hand2y.size()>0)) {
+	if (tracker.guide2x >0 && (!tracker.hand1y.isEmpty() && !tracker.hand2y.isEmpty())) {
 		// fill(200,200,200,50);
 		stroke(0);
 		float h1x = tracker.proj1;
