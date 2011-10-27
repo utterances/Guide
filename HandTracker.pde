@@ -38,6 +38,8 @@ class HandTracker {
 	int viewx,viewy;
 	boolean on1,on2;
 	String streamfile;
+	int fps, disfps;
+	long lastS;
 	
 	// -----external setting-----
 	boolean recording;
@@ -67,6 +69,8 @@ class HandTracker {
 		on2= false;
 		recording = false;
 		streamfile = "";
+		fps = disfps =0;
+		lastS = -1;
 	}
 	
 	void display() {
@@ -332,19 +336,26 @@ class HandTracker {
 				BufferedWriter out = new BufferedWriter(fstream);
 				out.write(now + ":" + hand1x.getLast() + " " + hand1y.getLast()
 				 	+ " "+ vel1 + " " + wid1 + " "	+ hand2x.getLast() + " " +
-				 	hand2y.getLast() + " " vel2 + " " + wid2 + "\n");
-				out.close();				
+				 	hand2y.getLast() + " " + vel2 + " " + wid2 + "\n");
+				out.close();
 			} catch (Exception e){			//Catch exception if any
 				System.err.println("Error: " + e.getMessage());
 			}
 		}
-		
+		// ======================= count frames per sec ========================
+		if (Math.round(lastS/1000) != Math.round(now/1000)) {
+			disfps = fps;
+			fps = 0;
+			lastS = now;
+		}
+		fps += 1;
 		
 		// =========================================draw text and other overlay:
 		fill(0,0,0,80);
 		rect(0,0,200,200);
 		fill(230,200,200);
-		text(str(CVThreshold),0,30);
+		text("fps:"+str(disfps),viewx,viewy+30);
+		text(str(CVThreshold),viewx,viewy+50);
 		// text(str(proj),0,45);
 		if (markMode == 2) {
 			text("mark first point", 0, 60);
