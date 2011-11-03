@@ -154,8 +154,7 @@ class HandTracker {
 		// ======================== save kinect data ===========================
 		long now = System.currentTimeMillis();
 		if (recording) {
-			depth.save(BASEPATH + "/rec/d"+now+".tif");
-			img.save(BASEPATH + "/vid/v"+now+".tif");
+			dataThread.setData(img,depth,now);
 		}
 		// ========================= end save kinect data ======================
 
@@ -345,18 +344,12 @@ class HandTracker {
 				if (streamfile.equals("")) {
 					streamfile = BASEPATH + "/track" + now;
 					File file = new File(streamfile);
-					print("create new!");
-					print(streamfile + "\n");
-					boolean exi = file.createNewFile();
-					if (!exi) {
+					print("saving trackng data to " + streamfile + "\n");
+					if (!file.createNewFile()) {
 						print("File already exists.");
-					} else {
-						print("created!\n");
 					}
 				}
 				
-				
-				// File file = new File (streamfile);
 				FileWriter fstream = new FileWriter(streamfile,true);
 				BufferedWriter out = new BufferedWriter(fstream);
 				out.write(now + ":" + hand1x.getLast() + " " + hand1y.getLast()

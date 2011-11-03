@@ -85,13 +85,24 @@ public class DataProcThread extends Thread {
 	public void run() {
 		String line;
 		OutputStream stdin = null;
-
+		// int fps = 0;
+		// long now, lastS;
 		while (running) {
+			// now = System.currentTimeMillis();
+				
 			if (fresh) {
-				print("@");
-				// depth.save(BASEPATH + "/rec/d"+time+".tif");
-				// img.save(BASEPATH + "/vid/v"+time+".tif");
+				// print("@");
+				depth.save(BASEPATH + "/rec/d"+time+".tif");
+				img.save(BASEPATH + "/vid/v"+time+".tif");
+				fresh = false;
+				// fps += 1;
 			}
+			
+			// if (lastS != now/1000) {
+			// 	print(fps + "\n");
+			// 	fps = 0;
+			// 	lastS = now/1000;
+			// }			
 		}
 	}
 	
