@@ -110,9 +110,8 @@ class HandTracker {
 		// 	depth.save("./rec/d"+now+".tga");
 		// 	img.save("./vid/v"+now+".tif");
 		// }
-		
+		depth.loadPixels();
 		for (int i=0; i<depth.pixels.length; i++){
-			depth.loadPixels();
 			float r,g,b;
 			r = red(depth.pixels[i]) - red(back.pixels[i]);
 			g = green(depth.pixels[i]) - green(back.pixels[i]);
@@ -120,15 +119,13 @@ class HandTracker {
 			if (abs(r+g+b) < BACKTHRES) {
 				depth.pixels[i] = color(10);
 			}
-			depth.updatePixels();
 		}
+		depth.updatePixels();
 		image(depth,viewx,viewy,640,480);
 		
 		// ======================== save kinect data ===========================
 		long now = System.currentTimeMillis();
 		if (recording) {
-			// Date now = new Date();
-			// long now = System.currentTimeMillis();
 			depth.save(BASEPATH + "/rec/d"+now+".tif");
 			img.save(BASEPATH + "/vid/v"+now+".tif");
 		}
@@ -343,13 +340,13 @@ class HandTracker {
 			}
 		}
 		// ======================= count frames per sec ========================
-		if (Math.round(lastS/1000) != Math.round(now/1000)) {
+		if (lastS != now/1000) {
 			disfps = fps;
 			fps = 0;
-			lastS = now;
+			lastS = now/1000;
 		}
 		fps += 1;
-		
+		// print(now/1000 + " " + lastS + "\n");
 		// =========================================draw text and other overlay:
 		fill(0,0,0,80);
 		rect(0,0,200,200);

@@ -198,7 +198,7 @@ void keyPressed() {
 			if (!tracker.recording) {
 				tracker.streamfile = "";
 			}
-;		}
+		}
 	}
 }
 
