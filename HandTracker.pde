@@ -146,7 +146,9 @@ class HandTracker {
 			}
 		}
 		depth.updatePixels();
-		image(depth,viewx,viewy,640,480);
+		if (!fps) {
+			image(depth,viewx,viewy,640,480);			
+		}
 		
 		// ======================== save kinect data ===========================
 		long now = System.currentTimeMillis();
@@ -177,16 +179,20 @@ class HandTracker {
 			}
 			
 			// draw hand blobs
-			// fill(204, 102, 0, 45);
-			// noStroke();
-			// beginShape();
+			fill(256, 77, 150, 200);
+			noStroke();
+			beginShape();
+			boolean skip = true;
 			int cx=0, cy=0;
 			for( int j=0; j<blobs[i].points.length; j++ ) {
 				if (maxY - blobs[i].points[j].y < NORMDIST) {
 					
-					float hx = SCREENW - blobs[i].points[j].x * SCALE + XOFF;
-					float hy = (SCREENH -blobs[i].points[j].y) * SCALE + YOFF;
-					vertex(hx,hy);
+					float hx = SCREENW - blobs[i].points[j].x * YSCALE + XOFF;
+					float hy = (SCREENH -blobs[i].points[j].y) * YSCALE + YOFF;
+					if (!skip) {
+						vertex(hx,hy);
+					}
+					skip = !skip;
 					
 					// vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );
 					if (maxY - blobs[i].points[j].y < NORMDIST/2) {
@@ -206,7 +212,7 @@ class HandTracker {
 					}
 				}
 			}
-			// endShape(CLOSE);
+			endShape(CLOSE);
 			// centX/=cx;
 			centX=(maxX+minX)/2;
 			// centY/=cy;
@@ -214,7 +220,6 @@ class HandTracker {
 			String lab = "N"; 
 			float d1 = 0, d2 = 0;
 			if (!hand1x.isEmpty() && !hand2x.isEmpty()) {
-				// do smoothing:
 				d1 = (float)(Math.pow(hand1x.getLast()-centX,2)
 							+Math.pow(hand1y.getLast()-centY,2));
 				d2 = (float)(Math.pow(hand2x.getLast()-centX,2)

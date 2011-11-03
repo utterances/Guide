@@ -11,6 +11,8 @@ HandTracker tracker;
 MidiIO midiIO;
 MidiOut midiOut;
 
+ParticleSystem ps;
+
 // -------------------------------parameters------------------------------------
 
 static final int KEYNUM = 88;
@@ -37,8 +39,9 @@ static float FEEDY;					// location of feed bars, calculated
 static final int FEEDH = 10;		//minimal height
 static final float FEEDRATIO = 0.4; // how high the velocity is shown
 
-static final float SCALE = 2.5;
-static final int XOFF = 120;
+static final float XSCALE = 2.5;
+static final float YSCALE = 2.3;
+static final int XOFF = 100;
 static final int YOFF = -870;
 
 static float TEMPO = 0.03;
@@ -67,7 +70,7 @@ int skipframes;
 
 LinkedList<MidiNote> song;
 MidiDisplay songGuide;
-boolean songPlaying, playingHarp, useChordGuide, useMIDIGuide;
+boolean songPlaying, playingHarp, useChordGuide,useMIDIGuide, showKeys,particle;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -151,10 +154,17 @@ void setup() {
 	// 							keyoffset_b, 
 	// 							10.0, FEEDY, 
 	// 							keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
+	
+	// --------------------------------initialize particle generator:
+	  // Create an alpha masked image to be applied as the particle's texture
+	ps = new ParticleSystem(1, new PVector(width/2,height/2,0));
+	
 	songPlaying = false;
 	playingHarp = false;
 	useChordGuide = true;
 	useMIDIGuide = false;
+	showKeys = true;
+	particle =false;
 }
 
 void keyPressed() {
@@ -177,8 +187,8 @@ void keyPressed() {
 			}
 		} else if (key =='s') {
 			tracker.resetTracking();
-		} else if (key =='p') {
-			songPlaying=!songPlaying;
+		// } else if (key =='p') {
+		// 	songPlaying=!songPlaying;
 		} else if (key =='h') {
 			playingHarp=!playingHarp;
 		} else if (key =='g') {
@@ -186,6 +196,10 @@ void keyPressed() {
 			useMIDIGuide = !useMIDIGuide;
 		} else if (key =='r') {
 			tracker.startStopRecording();
+		} else if (key == 'v') {
+			showKeys = !showKeys;
+		} else if (key == 'p') {
+			particle = !particle;
 		}
 	}
 }
@@ -310,7 +324,8 @@ void draw() {
 	// print(songGuide.guideNotes);
 	
 	for (int i = 0; i < keys.length; i ++ ) {
-		if (keys[i].isWhite) {
+		if (keys[i].isWhite && (showKeys || keys[i].isOn 
+										|| keys[i].curB > keys[i].lowB)) {
 			keys[i].display();
 		}
 		// feedBar[i].blackOut();
@@ -320,7 +335,9 @@ void draw() {
 		} else if (!useFeedbackBar && feedBar[i].curB > feedBar[i].lowB) {
 			feedBar[i].curB -=2;
 		}
-		feedBar[i].display();
+		if (showKeys || feedBar[i].height > FEEDH){
+			feedBar[i].display();			
+		}
 		// if (useMIDIGuide){
 		// 	keys[i].isActiveGuide = songGuide.guideNotes.contains(i-1);
 		// 	// if (songGuide.guideNotes.contains(i)) {
@@ -330,8 +347,9 @@ void draw() {
 	}
 	
 	for (int i = 0; i < keys.length; i ++ ) {
-		if (!keys[i].isWhite) {
-			keys[i].display();			
+		if (!keys[i].isWhite && (showKeys || keys[i].isOn
+										|| keys[i].curB > keys[i].lowB)) {
+			keys[i].display();
 		}
 		
 		if (!keys[i].isActiveGuide) {
@@ -385,6 +403,7 @@ void draw() {
 	// }
 	colorMode(RGB,255);
 	tracker.display();
+	ps.run();
 	
 	// draw hand bubble, if calibration exists
 	if (tracker.guide2x >0 && (!tracker.hand1y.isEmpty() && !tracker.hand2y.isEmpty())) {
@@ -395,23 +414,23 @@ void draw() {
 		float h2x = tracker.proj2;
 		float h2y = tracker.hand2y.getLast();
 		
-		h1x = h1x * SCALE + XOFF;
-		h2x = h2x * SCALE + XOFF;
-		h1y = (SCREENH -h1y) * SCALE + YOFF;
-		h2y = (SCREENH -h2y) * SCALE + YOFF;
+		h1x = h1x * XSCALE + XOFF;
+		h2x = h2x * XSCALE + XOFF;
+		h1y = (SCREENH -h1y) * YSCALE + YOFF;
+		h2y = (SCREENH -h2y) * YSCALE + YOFF;
 		
 		if (tracker.on1) {
 			fill(200,200,200,Math.max(tracker.wid1,5));
 			ellipse(h1x,h1y,80,(tracker.vel1-90)*3);
-			text(str(tracker.vel1)+" "+str(tracker.wid1),h1x,h1y);			
+			text(str(tracker.vel1)+" "+str(tracker.wid1),h1x,h1y);
+			if (particle) { ps.addParticle(h1x,h1y);}
 		}
-		
 		if (tracker.on2) {
 			fill(200,200,200,Math.max(tracker.wid2,5));
 			ellipse(h2x,h2y,80,(tracker.vel2-90)*3);
-			text(str(tracker.vel2)+" "+str(tracker.wid2),h2x,h2y);			
+			text(str(tracker.vel2)+" "+str(tracker.wid2),h2x,h2y);
+			if (particle) {	ps.addParticle(h2x,h2y);}
 		}
-			
 		int vel1 = Math.min((tracker.vel1-80)*2+47,127);
 		int vel2 = Math.min((tracker.vel2-80)*2+47,127);
 		vel1 = Math.max(vel1,20);
