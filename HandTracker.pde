@@ -133,10 +133,7 @@ class HandTracker {
 		// // ======================== save kinect data ===========================
 		// long now = System.currentTimeMillis();
 		// if (recording) {
-		// 	// Date now = new Date();
-		// 	// long now = System.currentTimeMillis();
-		// 	depth.save("./rec/d"+now+".tga");
-		// 	img.save("./vid/v"+now+".tif");
+			// dataThread.setData(img,depth,now);
 		// }
 		depth.loadPixels();
 		for (int i=0; i<depth.pixels.length; i++){
@@ -180,9 +177,9 @@ class HandTracker {
 			}
 			
 			// draw hand blobs
-			fill(204, 102, 0, 45);
-			noStroke();
-			beginShape();
+			// fill(204, 102, 0, 45);
+			// noStroke();
+			// beginShape();
 			int cx=0, cy=0;
 			for( int j=0; j<blobs[i].points.length; j++ ) {
 				if (maxY - blobs[i].points[j].y < NORMDIST) {
@@ -209,7 +206,7 @@ class HandTracker {
 					}
 				}
 			}
-			endShape(CLOSE);
+			// endShape(CLOSE);
 			// centX/=cx;
 			centX=(maxX+minX)/2;
 			// centY/=cy;
@@ -370,6 +367,7 @@ class HandTracker {
 		// print(now/1000 + " " + lastS + "\n");
 		// =========================================draw text and other overlay:
 		fill(0,0,0,80);
+		noStroke();
 		rect(0,0,200,200);
 		fill(230,200,200);
 		text("fps:"+str(disfps),viewx,viewy+30);
