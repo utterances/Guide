@@ -313,12 +313,12 @@ void draw() {
 	// mouse test: find which key the mouse is on top of
 	fill(color(0, 0, 0));
 	rect(0,0,SCREENW,SCREENH);
-	if (useMIDIGuide) {
-		songGuide.display();		
-		if (songPlaying) {
-			songGuide.forward(TEMPO);
-		}
-	}
+	// if (useMIDIGuide) {
+	// 	songGuide.display();		
+	// 	if (songPlaying) {
+	// 		songGuide.forward(TEMPO);
+	// 	}
+	// }
 	// print(songGuide.guideNotes);
 	
 	for (int i = 0; i < keys.length; i ++ ) {
@@ -333,12 +333,12 @@ void draw() {
 			feedBar[i].curB -=2;
 		}
 		feedBar[i].display();
-		if (useMIDIGuide){
-			keys[i].isActiveGuide = songGuide.guideNotes.contains(i-1);
-			// if (songGuide.guideNotes.contains(i)) {
-			// 	print("activating "+i+"\n");				
-			// }
-		}
+		// if (useMIDIGuide){
+		// 	keys[i].isActiveGuide = songGuide.guideNotes.contains(i-1);
+		// 	// if (songGuide.guideNotes.contains(i)) {
+		// 	// 	print("activating "+i+"\n");				
+		// 	// }
+		// }
 	}
 	
 	for (int i = 0; i < keys.length; i ++ ) {
