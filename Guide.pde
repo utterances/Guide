@@ -169,23 +169,14 @@ void keyPressed() {
 			print(tracker.CVThreshold);
 		} 
 	} else {
-		if (key == 116) {
-			tracker.thre = !tracker.thre;
-			print(tracker.thre);
-		} else if (key == 'b') {
-			// do background
-			if (tracker.backCollect == 0) {
-				tracker.backCollect = tracker.BACKFRAMES;				
-			}
+		if (key == 'b') {
+			tracker.resetBackground();
 		} else if (key =='m') {
 			if (tracker.markMode == 0){
 				tracker.markMode = 2;				
 			}
 		} else if (key =='s') {
-			tracker.hand1x.clear();
-			tracker.hand1y.clear();
-			tracker.hand2x.clear();
-			tracker.hand2y.clear();
+			tracker.resetTracking();
 		} else if (key =='p') {
 			songPlaying=!songPlaying;
 		} else if (key =='h') {
@@ -194,10 +185,7 @@ void keyPressed() {
 			useChordGuide = !useChordGuide;
 			useMIDIGuide = !useMIDIGuide;
 		} else if (key =='r') {
-			tracker.recording = !tracker.recording;
-			if (!tracker.recording) {
-				tracker.streamfile = "";
-			}
+			tracker.startStopRecording();
 		}
 	}
 }

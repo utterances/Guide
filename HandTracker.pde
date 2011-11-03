@@ -37,6 +37,9 @@ class HandTracker {
 	float proj1,proj1p,proj2,proj2p;
 	int viewx,viewy;
 	boolean on1,on2;
+	
+	// -------------------------- other data and structs
+	DataProcThread dataThread; // use to save data to disk on 2nd thread
 	String streamfile;
 	int fps, disfps;
 	long lastS;
@@ -48,6 +51,9 @@ class HandTracker {
 		NativeKinect.init();
 		NativeKinect.start();
 
+		dataThread = new DataProcThread();
+		dataThread.start();
+		
 		img = createImage(640,480,RGB);
 		depth = createImage(640,480,RGB);
 		back = createImage(640,480,RGB);
@@ -73,6 +79,28 @@ class HandTracker {
 		lastS = -1;
 	}
 	
+	void startStopRecording() {
+		// flip recording state
+		recording = !recording;		
+		if (!recording) {
+			streamfile = "";
+		}
+	}
+	
+	void resetTracking() {
+		hand1x.clear();
+		hand1y.clear();
+		hand2x.clear();
+		hand2y.clear();
+	}
+	
+	void resetBackground() {
+		// do background
+		if (backCollect == 0) {
+			backCollect = BACKFRAMES;				
+		}
+	}
+	
 	void display() {
 		depth.pixels = NativeKinect.getDepthMap();
 		depth.updatePixels();
@@ -96,7 +124,7 @@ class HandTracker {
 
 			backCollect--;
 			if (backCollect == 0) {
-				print("done");
+				print("done background\n");
 			}
 			back.updatePixels();			
 			print(".");
@@ -312,7 +340,7 @@ class HandTracker {
 		
 		// ======================== save tracker data ==========================
 		if (recording && !hand1y.isEmpty() && !hand2y.isEmpty()) {
-			print("@");
+			// print("@");
 			try {
 				if (streamfile.equals("")) {
 					streamfile = BASEPATH + "/track" + now;

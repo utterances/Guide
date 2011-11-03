@@ -88,8 +88,9 @@ public class DataProcThread extends Thread {
 
 		while (running) {
 			if (fresh) {
-				depth.save(BASEPATH + "/rec/d"+time+".tif");
-				img.save(BASEPATH + "/vid/v"+time+".tif");
+				print("@");
+				// depth.save(BASEPATH + "/rec/d"+time+".tif");
+				// img.save(BASEPATH + "/vid/v"+time+".tif");
 			}
 		}
 	}
