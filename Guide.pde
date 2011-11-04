@@ -404,6 +404,8 @@ void draw() {
 	colorMode(RGB,255);
 	tracker.display();
 	ps.run();
+
+	if (particle) { ps.addParticle(mouseX,mouseY);}
 	
 	// draw hand bubble, if calibration exists
 	if (tracker.guide2x >0 && (!tracker.hand1y.isEmpty() && !tracker.hand2y.isEmpty())) {

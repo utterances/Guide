@@ -33,6 +33,10 @@ class ParticleSystem {
 		particles.add(new Particle(new PVector(x,y)));
 	}
 
+	void addParticle(float x, float y, float vx, float vy) {
+		particles.add(new Particle(new PVector(x,y)));
+	}
+
 	void addParticle(Particle p) {
 		particles.add(p);
 	}

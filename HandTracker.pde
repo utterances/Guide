@@ -146,7 +146,7 @@ class HandTracker {
 			}
 		}
 		depth.updatePixels();
-		if (!fps) {
+		if (fps==1) {
 			image(depth,viewx,viewy,640,480);			
 		}
 		
@@ -323,13 +323,15 @@ class HandTracker {
 			// 	}
 			// }
 
-			fill(200,200,200,vel);
-			ellipse(centX+viewx,centY+viewy,
-				Math.max(vel*2-120,5),Math.max(vel*2-120,5));
-			// print(str(vel)+" ");
-			// ellipse((maxX+minX)/2+viewx,(maxY+minY)/2+viewy,10,10);
-			fill(230,200,200);
-			text(lab+str(vel)+" "+str(centY),centX+viewx,centY+viewy);
+			if (fps == 2) {
+				fill(200,200,200,vel);
+				ellipse(centX+viewx,centY+viewy,
+					Math.max(vel*2-120,5),Math.max(vel*2-120,5));
+				// print(str(vel)+" ");
+				// ellipse((maxX+minX)/2+viewx,(maxY+minY)/2+viewy,10,10);
+				fill(230,200,200);
+				text(lab+str(vel)+" "+str(centY),centX+viewx,centY+viewy);				
+			}
 
 			// beginShape();
 			// for( int j=0; j<blobs[i].points.length; j++ ) {
@@ -375,16 +377,17 @@ class HandTracker {
 		noStroke();
 		rect(0,0,200,200);
 		fill(230,200,200);
-		text("fps:"+str(disfps),viewx,viewy+30);
-		text(str(CVThreshold),viewx,viewy+50);
-		// text(str(proj),0,45);
+		if (fps == 2) {
+			text("fps:"+str(disfps),viewx,viewy+10);
+			text(str(CVThreshold),viewx,viewy+30);			
+		}
 		if (markMode == 2) {
 			text("mark first point", 0, 60);
 		} else if (markMode == 1) {
 			text("mark second point", 0, 60);
 			stroke(color(255,0,0));
 			line(guide1x+viewx,guide1y+viewy,mouseX,mouseY);
-		} else {
+		} else if (fps == 2){
 			stroke(color(255,0,0));
 			line(guide1x+viewx,guide1y+viewy,guide2x+viewx,guide2y+viewy);		
 		}
