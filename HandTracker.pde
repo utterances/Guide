@@ -188,7 +188,7 @@ class HandTracker {
 				if (maxY - blobs[i].points[j].y < NORMDIST) {
 					
 					float hx = SCREENW - blobs[i].points[j].x * YSCALE + XOFF;
-					float hy = (SCREENH -blobs[i].points[j].y) * YSCALE + YOFF;
+					float hy = (SCREENH - blobs[i].points[j].y) * YSCALE + YOFF;
 					if (!skip) {
 						vertex(hx,hy);
 					}
@@ -296,8 +296,14 @@ class HandTracker {
 				}
 			}
 			// vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );
-			stroke(color(255,0,0));
-			line(minX+viewx,centY+viewy,maxX+viewx,centY+viewy);
+			stroke(color(255,255,255));			
+			line(SCREENW - minX*YSCALE+XOFF
+				,(SCREENH-centY*YSCALE)+YOFF
+				,SCREENW - maxX*YSCALE+XOFF,(SCREENH-centY*YSCALE)+YOFF);
+			
+			
+			
+			// line(minX+viewx,centY+viewy,maxX+viewx,centY+viewy);
 						
 			if (d1>0||d2>0) {
 				if (d1<d2) {
