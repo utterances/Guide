@@ -39,15 +39,18 @@ static float FEEDY;					// location of feed bars, calculated
 static final int FEEDH = 10;		//minimal height
 static final float FEEDRATIO = 0.4; // how high the velocity is shown
 
-static final float XSCALE = 2.5;
-static final float YSCALE = 2.3;
-static final int XOFF = 100;
-static final int YOFF = -870;
+static final float XSCALE = 1.9;
+static final float YSCALE = 2;
+static final int XOFF = 240;
+static final int YOFF = -640;
 
 static float TEMPO = 0.03;
 
 // skip frames for sending MIDI messages
 static int SKIPFR = 3; //send expression every this many frames
+
+// Particle system:
+static int PARTICLETHE = 70; // hand width threshold for activate particles
 
 // -------------------------------data structs----------------------------------
 KeyGuide[] keys = new KeyGuide[KEYNUM];
@@ -71,6 +74,8 @@ int skipframes;
 LinkedList<MidiNote> song;
 MidiDisplay songGuide;
 boolean songPlaying, playingHarp, useChordGuide,useMIDIGuide, showKeys,particle;
+boolean MIDIon;
+int MIDIchanY, MIDIchanZ, MIDIchanW;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -165,6 +170,8 @@ void setup() {
 	useMIDIGuide = false;
 	showKeys = true;
 	particle =false;
+	MIDIon = false;
+	MIDIchanY = MIDIchanZ = MIDIchanW = -1;
 }
 
 void keyPressed() {
@@ -179,28 +186,46 @@ void keyPressed() {
 			print(tracker.CVThreshold);
 		} 
 	} else {
-		if (key == 'b') {
-			tracker.resetBackground();
-		} else if (key =='m') {
-			if (tracker.markMode == 0){
-				tracker.markMode = 2;				
-			}
-		} else if (key =='s') {
-			tracker.resetTracking();
-		// } else if (key =='p') {
-		// 	songPlaying=!songPlaying;
-		} else if (key =='h') {
-			playingHarp=!playingHarp;
-		} else if (key =='g') {
-			useChordGuide = !useChordGuide;
-			useMIDIGuide = !useMIDIGuide;
-		} else if (key =='r') {
-			tracker.startStopRecording();
-		} else if (key == 'v') {
-			showKeys = !showKeys;
-		} else if (key == 'p') {
-			particle = !particle;
-		}
+		switch (key) {
+			case 'b': tracker.resetBackground();	break;
+		 	case 'm':
+				if (tracker.markMode == 0){
+					tracker.markMode = 2;				
+				}									break;
+			case 's': tracker.resetTracking();		break;
+			case 'h': playingHarp=!playingHarp;		break;
+			case 'g': useChordGuide = !useChordGuide;
+				useMIDIGuide = !useMIDIGuide;		break;
+			case 'r': tracker.startStopRecording();	break;
+			case 'v': showKeys = !showKeys;			break;
+			case 'p': particle = !particle;			break;
+			case '1': 
+				if (MIDIchanY < 0) {
+					MIDIchanY = 12;
+				} else if (MIDIchanY == 13) {
+					MIDIchanY = -1;
+				} else {
+					MIDIchanY += 1;
+				}									break;
+			case '2': 
+				if (MIDIchanZ < 0) {
+					MIDIchanZ = 12;
+				} else if (MIDIchanZ == 13) {
+					MIDIchanZ = -1;
+				} else {
+					MIDIchanZ += 1;
+				}									break;
+			case '3': 
+				if (MIDIchanW < 0) {
+					MIDIchanW = 12;
+				} else if (MIDIchanW == 13) {
+					MIDIchanW = -1;
+				} else {
+					MIDIchanW += 1;
+				}									break;
+			case 'd': MIDIon = !MIDIon;				break;
+			default: break;
+		}		
 	}
 }
 
@@ -313,7 +338,8 @@ void draw() {
 	colorMode(HSB,100);
 	
 	// mouse test: find which key the mouse is on top of
-	fill(color(0, 0, 0));
+	fill(0);
+	noStroke();
 	rect(0,0,SCREENW,SCREENH);
 	// if (useMIDIGuide) {
 	// 	songGuide.display();		
@@ -405,7 +431,7 @@ void draw() {
 	tracker.display();
 	ps.run();
 
-	if (particle) { ps.addParticle(mouseX,mouseY);}
+	// if (particle) { ps.addParticle(mouseX,mouseY);}
 	
 	// draw hand bubble, if calibration exists
 	if (tracker.guide2x >0 && (!tracker.hand1y.isEmpty() && !tracker.hand2y.isEmpty())) {
@@ -418,38 +444,48 @@ void draw() {
 		
 		h1x = h1x * XSCALE + XOFF;
 		h2x = h2x * XSCALE + XOFF;
-		h1y = (SCREENH -h1y) * YSCALE + YOFF;
-		h2y = (SCREENH -h2y) * YSCALE + YOFF;
+		h1y = (SCREENH -h1y) * YSCALE + YOFF-150;
+		h2y = (SCREENH -h2y) * YSCALE + YOFF-150;
 		
 		if (tracker.on1) {
-			fill(200,200,200,Math.max(tracker.wid1,5));
-			ellipse(h1x,h1y,80,(tracker.vel1-90)*3);
+			fill(150,(tracker.vel1-90)*3.2,150,200);
+			ellipse(h1x,h1y,tracker.wid1*2-10,tracker.wid1*2-10);
 			text(str(tracker.vel1)+" "+str(tracker.wid1),h1x,h1y);
-			if (particle) { ps.addParticle(h1x,h1y);}
+			if (particle && tracker.wid1 > PARTICLETHE) {
+				 ps.addParticle(h1x,h1y,color(200,(tracker.vel1-90)*3.2,200));
+			}
 		}
 		if (tracker.on2) {
-			fill(200,200,200,Math.max(tracker.wid2,5));
-			ellipse(h2x,h2y,80,(tracker.vel2-90)*3);
+			fill(150,(tracker.vel2-90)*3.2,150,200);
+			ellipse(h2x,h2y,tracker.wid2*2-10,tracker.wid2*2-10);
 			text(str(tracker.vel2)+" "+str(tracker.wid2),h2x,h2y);
-			if (particle) {	ps.addParticle(h2x,h2y);}
+			if (particle && tracker.wid2 > PARTICLETHE) {		
+				ps.addParticle(h2x,h2y,color(200,(tracker.vel2-90)*3.2,200));
+			}
 		}
 		int vel1 = Math.min((tracker.vel1-80)*2+47,127);
 		int vel2 = Math.min((tracker.vel2-80)*2+47,127);
 		vel1 = Math.max(vel1,20);
 		vel2 = Math.max(vel2,20);
 		
-		if (skipframes == 0) {
+		if (skipframes == 0 && MIDIon) {
 		
 			// Y-axis send out MIDI expression messages: mod or damper?
-			float newMod = 
-				Math.max(tracker.hand1y.getLast(),tracker.hand2y.getLast());
-			newMod = Math.max((newMod-30)/2.9,7);
-			midiOut.sendController(new Controller(16, Math.round(newMod)));
+			float newMod;
+			if (MIDIchanY >0) {
+				newMod = 
+					Math.max(tracker.hand1y.getLast(),tracker.hand2y.getLast());
+				newMod = Math.max((newMod-30)/2,1);
+				newMod = Math.min(newMod,127);
+				midiOut.sendController(new 
+					Controller(MIDIchanY, Math.round(newMod)));
+				print("sent Y"+newMod+"\n");
+			}
 			
 			// X-axis message?
 
 			// send width/ open/close hand message?
-			if (tracker.on1 || tracker.on2) {
+			if (MIDIchanW>0 && (tracker.on1 || tracker.on2)) {
 				if (tracker.hand1y.getLast()>tracker.hand2y.getLast() 
 					&& tracker.on1) {
 					newMod = tracker.wid1*1.2-30;
@@ -457,15 +493,16 @@ void draw() {
 					newMod = tracker.wid2*1.2-30;
 				}
 				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
-				newMod = Math.min(Math.max(newMod,0),126);
-				midiOut.sendController(new Controller(17, Math.round(newMod)));				
+				newMod = Math.min(Math.max(newMod,0),127);
+				midiOut.sendController(new 
+					Controller(MIDIchanW, Math.round(newMod)));				
 			}
 			
-			if (!playingHarp) {
+			if (!playingHarp && MIDIchanZ>0) {
 				float h = Math.min(127,
 					Math.max((Math.max(tracker.vel1,tracker.vel2)-100)*2.4,0));
-				
-				midiOut.sendController(new Controller(18, Math.round(h)));
+				midiOut.sendController(new 
+					Controller(MIDIchanZ, Math.round(h)));
 				// print(h);
 				// print("\n");
 			}
@@ -534,9 +571,17 @@ void draw() {
 
 void printLabels() {
 	if (tracker.recording) {
-		stroke(color(100,100,100));
+		stroke(color(200,200,200));
 		text("Recording",SCREENW/2,30);
-	}	
+	}
+	noStroke();
+	fill(0);
+	rect(SCREENW,480,SCREENW+640,SCREENH);
+	fill(color(200,200,200));
+	text("MIDI expressions: " + MIDIon + "\n", SCREENW, 494);
+	text("Y channel = " + MIDIchanY + "\n", SCREENW,506);
+	text("Z channel = " + MIDIchanW + "\n", SCREENW,518);
+	text("W channel = " + MIDIchanZ + "\n", SCREENW,530);
 }
 
 

@@ -187,7 +187,7 @@ class HandTracker {
 			for( int j=0; j<blobs[i].points.length; j++ ) {
 				if (maxY - blobs[i].points[j].y < NORMDIST) {
 					
-					float hx = SCREENW - blobs[i].points[j].x * YSCALE + XOFF;
+					float hx = SCREENW - blobs[i].points[j].x * YSCALE;
 					float hy = (SCREENH - blobs[i].points[j].y) * YSCALE + YOFF;
 					if (!skip) {
 						vertex(hx,hy);
@@ -296,10 +296,10 @@ class HandTracker {
 				}
 			}
 			// vertex( blobs[i].points[j].x+viewx, blobs[i].points[j].y+viewy );
-			stroke(color(255,255,255));			
-			line(SCREENW - minX*YSCALE+XOFF
-				,(SCREENH-centY*YSCALE)+YOFF
-				,SCREENW - maxX*YSCALE+XOFF,(SCREENH-centY*YSCALE)+YOFF);
+			// stroke(color(255,255,255));			
+			// line(SCREENW - minX*YSCALE+XOFF
+			// 	,(SCREENH-centY*YSCALE)+YOFF
+			// 	,SCREENW - maxX*YSCALE+XOFF,(SCREENH-centY*YSCALE)+YOFF);
 			
 			
 			

@@ -7,6 +7,18 @@ class Particle {
 	PVector acc;
 	float r;
 	float timer;
+	color c;
+
+	// Another constructor (the one we are using here)
+	Particle(PVector l, color newC) {
+		PVector v = new PVector(random(-1,1),random(-2,0),0);
+		acc = new PVector(0,0.2,0);
+		vel = new PVector(random(-1,1),random(-2,0),0);
+		loc = l.get();
+		r = 10.0;
+		timer = 100.0;
+		c = newC;
+	}
 
 	// Another constructor (the one we are using here)
 	Particle(PVector l) {
@@ -43,7 +55,7 @@ class Particle {
 	void render() {
 		ellipseMode(CENTER);
 		stroke(255,timer);
-		fill(100,timer);
+		fill(c,timer);
 		ellipse(loc.x,loc.y,r,r);
 		// displayVector(vel,loc.x,loc.y,10);
 	}
