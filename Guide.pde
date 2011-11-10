@@ -201,24 +201,24 @@ void keyPressed() {
 			case 'p': particle = !particle;			break;
 			case '1': 
 				if (MIDIchanY < 0) {
-					MIDIchanY = 12;
-				} else if (MIDIchanY == 13) {
+					MIDIchanY = 16;
+				} else if (MIDIchanY == 18) {
 					MIDIchanY = -1;
 				} else {
 					MIDIchanY += 1;
 				}									break;
 			case '2': 
 				if (MIDIchanZ < 0) {
-					MIDIchanZ = 12;
-				} else if (MIDIchanZ == 13) {
+					MIDIchanZ = 16;
+				} else if (MIDIchanZ == 18) {
 					MIDIchanZ = -1;
 				} else {
 					MIDIchanZ += 1;
 				}									break;
 			case '3': 
 				if (MIDIchanW < 0) {
-					MIDIchanW = 12;
-				} else if (MIDIchanW == 13) {
+					MIDIchanW = 16;
+				} else if (MIDIchanW == 18) {
 					MIDIchanW = -1;
 				} else {
 					MIDIchanW += 1;
@@ -479,7 +479,7 @@ void draw() {
 				newMod = Math.min(newMod,127);
 				midiOut.sendController(new 
 					Controller(MIDIchanY, Math.round(newMod)));
-				print("sent Y"+newMod+"\n");
+				// print("sent Y"+newMod+"\n");
 			}
 			
 			// X-axis message?
@@ -580,8 +580,8 @@ void printLabels() {
 	fill(color(200,200,200));
 	text("MIDI expressions: " + MIDIon + "\n", SCREENW, 494);
 	text("Y channel = " + MIDIchanY + "\n", SCREENW,506);
-	text("Z channel = " + MIDIchanW + "\n", SCREENW,518);
-	text("W channel = " + MIDIchanZ + "\n", SCREENW,530);
+	text("Z channel = " + MIDIchanZ + "\n", SCREENW,518);
+	text("W channel = " + MIDIchanW + "\n", SCREENW,530);
 }
 
 
