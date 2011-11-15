@@ -47,7 +47,7 @@ static final int YOFF = -640;
 static float TEMPO = 0.03;
 
 // skip frames for sending MIDI messages
-static int SKIPFR = 3; //send expression every this many frames
+static int SKIPFR = 5; //send expression every this many frames
 
 // Particle system:
 static int PARTICLETHE = 70; // hand width threshold for activate particles
@@ -144,7 +144,7 @@ void setup() {
 	// chord_thread.start();
 	
 	// ------------------------------initialize kinect:
-	OpenCV ocv = new OpenCV( this );
+	OpenCV ocv = new OpenCV(this);
 	tracker	= new HandTracker(SCREENW,0, ocv);
 	
 	// ------------------------------initialize MIDI guide

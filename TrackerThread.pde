@@ -3,12 +3,12 @@
 
 public class TrackerThread extends Thread {
   	private boolean running;	     // Is the thread running?  Yes or no?
-	HandTracker tracker;
+	HandTracker trkr;	// actual hand tracker object
    	boolean fresh;		 // Is there fresh data to be polled?
   
   // Constructor, create the thread
-  // It is not running by default
-  	public TrackerThread() {
+  	public TrackerThread(int xoff, int yoff, OpenCV newOCV) {
+		tracker	= new HandTracker(xoff, yoff, newOCV);
 		running = false;
   	}
   
@@ -16,7 +16,6 @@ public class TrackerThread extends Thread {
 	    // Set running equal to true
 	    running = true;
 	    fresh = false;
-
 		print("starting tracker thread");
 	    // Do whatever start does in Thread, don't forget this!
 	    super.start();
@@ -24,8 +23,8 @@ public class TrackerThread extends Thread {
   
 	
 	public void run() {
-
 		while (true) {
+			tracker.update();
 		}
 	}
 }
