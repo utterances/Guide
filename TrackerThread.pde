@@ -24,7 +24,7 @@ public class TrackerThread extends Thread {
 	
 	public void run() {
 		while (true) {
-			tracker.update();
+			// tracker.update();
 		}
 	}
 }

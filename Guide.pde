@@ -13,6 +13,8 @@ MidiOut midiOut;
 
 ParticleSystem ps;
 
+PFont bigfont;
+PFont smallfont;
 // -------------------------------parameters------------------------------------
 
 static final int KEYNUM = 88;
@@ -76,6 +78,7 @@ MidiDisplay songGuide;
 boolean songPlaying, playingHarp, useChordGuide,useMIDIGuide, showKeys,particle;
 boolean MIDIon;
 int MIDIchanY, MIDIchanZ, MIDIchanW;
+int MIDIvalueY, MIDIvalueZ, MIDIvalueW;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -148,8 +151,7 @@ void setup() {
 	tracker	= new HandTracker(SCREENW,0, ocv);
 	
 	// ------------------------------initialize MIDI guide
-	String file = "/Users/Tim/Documents/Processing/MIDIReader/Clocks - carillon.mid";
-	
+	// String file = "/Users/Tim/Documents/Processing/MIDIReader/Clocks - carillon.mid";	
 	// "/Users/Tim/Documents/Scores/Carillon - Sjef van Balkom.mid";
 	 //"/Users/Tim/Documents/Processing/MIDIReader/Faure_pavane.mid";
 	
@@ -161,7 +163,6 @@ void setup() {
 	// 							keywidth_b, keywidth_b*(1-KEYWRATIO_B)/2);
 	
 	// --------------------------------initialize particle generator:
-	  // Create an alpha masked image to be applied as the particle's texture
 	ps = new ParticleSystem(1, new PVector(width/2,height/2,0));
 	
 	songPlaying = false;
@@ -172,6 +173,12 @@ void setup() {
 	particle =false;
 	MIDIon = false;
 	MIDIchanY = MIDIchanZ = MIDIchanW = -1;
+	MIDIvalueY = MIDIvalueZ = MIDIvalueW = -1;
+	// for (String s : PFont.list()) {
+	// 	print(s+"\n");
+	// }
+	bigfont = createFont("EurostileLTStd-Ex2", 50);
+	smallfont = createFont("EurostileLTStd-Ex2",13);
 }
 
 void keyPressed() {
@@ -477,8 +484,8 @@ void draw() {
 					Math.max(tracker.hand1y.getLast(),tracker.hand2y.getLast());
 				newMod = Math.max((newMod-30)/2,1);
 				newMod = Math.min(newMod,127);
-				midiOut.sendController(new 
-					Controller(MIDIchanY, Math.round(newMod)));
+				MIDIvalueY = Math.round(newMod);
+				midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
 				// print("sent Y"+newMod+"\n");
 			}
 			
@@ -494,17 +501,15 @@ void draw() {
 				}
 				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
 				newMod = Math.min(Math.max(newMod,0),127);
-				midiOut.sendController(new 
-					Controller(MIDIchanW, Math.round(newMod)));				
+				MIDIvalueW = Math.round(newMod);
+				midiOut.sendController(new Controller(MIDIchanW, MIDIvalueW));				
 			}
 			
 			if (!playingHarp && MIDIchanZ>0) {
-				float h = Math.min(127,
+				newMod = Math.min(127,
 					Math.max((Math.max(tracker.vel1,tracker.vel2)-100)*2.4,0));
-				midiOut.sendController(new 
-					Controller(MIDIchanZ, Math.round(h)));
-				// print(h);
-				// print("\n");
+				MIDIvalueZ = Math.round(newMod);
+				midiOut.sendController(new Controller(MIDIchanZ, MIDIvalueW));
 			}
 		}
 		
@@ -582,6 +587,12 @@ void printLabels() {
 	text("Y channel = " + MIDIchanY + "\n", SCREENW,506);
 	text("Z channel = " + MIDIchanZ + "\n", SCREENW,518);
 	text("W channel = " + MIDIchanW + "\n", SCREENW,530);
+	textFont(bigfont);
+	fill(color(256,256,256),100);
+	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",30,SCREENH-245);}
+	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",30,SCREENH-200);}
+	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",30,SCREENH-155);}
+	textFont(smallfont);
 }
 
 
