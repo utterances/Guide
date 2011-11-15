@@ -29,7 +29,7 @@ static final float KEYRATIO_B = 4.2; //3.9
 static final float KEYBORDER_B = .4;
 static final float KEYWRATIO_B = .75;
 
-static final int KEYCLOW = 20;
+static final int KEYCLOW = 80; //20
 
 // spotlight parameters
 static final int SPOTWID1 = 200;//200;
@@ -98,7 +98,7 @@ void setup() {
 		int scale = i % 12;
 		if (scale==1 || scale==4 || scale==6 || scale==9 || scale==11) {
 			// keys[i] = new KeyGuide(KEYCLOW,keyoffset_b+keywidth_b*(i-1) ,posy_b,keywidth_b*KEYWRATIO_B,keywidth*KEYRATIO_B, false);
-			keys[i] = new KeyGuide(KEYCLOW,
+			keys[i] = new KeyGuide(KEYCLOW+100,
 				keyoffset_b+keywidth_b*(i-1)+keywidth_b*(1-KEYWRATIO_B)/2
 			 	,posy_b,keywidth_b*KEYWRATIO_B,keywidth*KEYRATIO_B, false);
 			
@@ -112,9 +112,9 @@ void setup() {
 			keyoffset_b+keywidth_b*(i-1)+keywidth_b*(1-KEYWRATIO_B)/2,
 			FEEDY,keywidth_b*KEYWRATIO_B,FEEDH, true);
 		
-		if (scale==3 || scale==7 || scale==10 || scale==1) {
-			keys[i].isActiveGuide = true;
-		}
+		// if (scale==3 || scale==7 || scale==10 || scale==1) {
+		// 	keys[i].isActiveGuide = true;
+		// }
 		// keys[i].isActiveGuide = true;
 	}
 
@@ -167,7 +167,7 @@ void setup() {
 	
 	songPlaying = false;
 	playingHarp = false;
-	useChordGuide = true;
+	useChordGuide = false;
 	useMIDIGuide = false;
 	showKeys = true;
 	particle =false;
@@ -486,18 +486,15 @@ void draw() {
 				newMod = Math.min(newMod,127);
 				MIDIvalueY = Math.round(newMod);
 				midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
-				// print("sent Y"+newMod+"\n");
 			}
 			
-			// X-axis message?
-
 			// send width/ open/close hand message?
 			if (MIDIchanW>0 && (tracker.on1 || tracker.on2)) {
 				if (tracker.hand1y.getLast()>tracker.hand2y.getLast() 
 					&& tracker.on1) {
-					newMod = tracker.wid1*1.2-30;
+					newMod = tracker.wid1*1.2-40;
 				} else {
-					newMod = tracker.wid2*1.2-30;
+					newMod = tracker.wid2*1.2-40;
 				}
 				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
 				newMod = Math.min(Math.max(newMod,0),127);
@@ -509,7 +506,7 @@ void draw() {
 				newMod = Math.min(127,
 					Math.max((Math.max(tracker.vel1,tracker.vel2)-100)*2.4,0));
 				MIDIvalueZ = Math.round(newMod);
-				midiOut.sendController(new Controller(MIDIchanZ, MIDIvalueW));
+				midiOut.sendController(new Controller(MIDIchanZ, MIDIvalueZ));
 			}
 		}
 		
@@ -589,9 +586,9 @@ void printLabels() {
 	text("W channel = " + MIDIchanW + "\n", SCREENW,530);
 	textFont(bigfont);
 	fill(color(256,256,256),100);
-	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",30,SCREENH-245);}
-	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",30,SCREENH-200);}
-	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",30,SCREENH-155);}
+	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",180,SCREENH-245);}
+	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",180,SCREENH-200);}
+	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",180,SCREENH-155);}
 	textFont(smallfont);
 }
 

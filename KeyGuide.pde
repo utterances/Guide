@@ -32,7 +32,7 @@ class KeyGuide {
 		stroke(0);
 		int sat = 0;
 		if (isOn) {
-			sat = 80;
+			sat = 200;
 		}
 		if (isWhite) {
 			strokeWeight(1);
