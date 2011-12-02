@@ -615,10 +615,10 @@ void printLabels() {
 	text("fps:"+str(disfps),SCREENW,542);
 	
 	textFont(bigfont);
-	fill(color(220,220,220));
-	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",180,SCREENH-245);}
-	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",180,SCREENH-200);}
-	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",180,SCREENH-155);}
+	fill(color(220,220,220,200));
+	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",230,SCREENH-245);}
+	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",230,SCREENH-200);}
+	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",230,SCREENH-155);}
 	textFont(smallfont);
 }
 
