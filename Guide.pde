@@ -1,15 +1,17 @@
-import promidi.*;
+import themidibus.*;
+// import promidi.*;
 import java.io.*;
 
 import king.kinect.*;
 import hypermedia.video.*;
 import java.util.LinkedList;
 
-ChordThread chord_thread;
+// ChordThread chord_thread;
 HandTracker tracker;
 
-MidiIO midiIO;
-MidiOut midiOut;
+// MidiIO midiIO;
+// MidiOut midiOut;
+MidiBus myBus; // The MidiBus
 
 ParticleSystem ps;
 
@@ -72,21 +74,25 @@ static boolean useFeedbackBar;
 // piano 88 keys, 36 black, 52 white
 
 int skipframes;
+int fps, disfps;
+long lastS;
 
 LinkedList<MidiNote> song;
 MidiDisplay songGuide;
 boolean songPlaying, playingHarp, useChordGuide,useMIDIGuide, showKeys,particle;
+boolean floatingnotes;
 boolean MIDIon;
 int MIDIchanY, MIDIchanZ, MIDIchanW;
 int MIDIvalueY, MIDIvalueZ, MIDIvalueW;
 
 void setup() {
 	// colorMode(HSB,100);
+	frameRate(60);
 	skipframes = 0;
 	useFeedbackBar = true;
 	size(SCREENWTOTAL,SCREENH);
 	background(0);
-	smooth();
+	// smooth();
 	float keywidth = float(SCREENW)/WHITEKEYNUM;
 	float keywidth_b = (SCREENW-3*keywidth)/(KEYNUM-4);
 	float keyoffset_b = 2*(keywidth-keywidth_b);
@@ -119,29 +125,31 @@ void setup() {
 	}
 
 	//get an instance of MidiIO
-	midiIO = MidiIO.getInstance(this);
-	println("printPorts of midiIO");
-
-	//print a list of all available devices
-	midiIO.printDevices();
-
-	for (int i=0; i<midiIO.numberOfInputDevices(); i++) {
-		if(midiIO.getInputDeviceName(i).equals("In")){
-			MIDIINCH = i;
-			break;
-		}
-	}
-
-	for (int i=0; i<midiIO.numberOfOutputDevices(); i++) {
-		if(midiIO.getOutputDeviceName(i).equals("Bus 1")){
-			MIDIOUTCH = i;
-			break;
-		}
-	}
+	// midiIO = MidiIO.getInstance(this);
+	// println("printPorts of midiIO");
+	// 
+	// //print a list of all available devices
+	// midiIO.printDevices();
+	// 
+	// for (int i=0; i<midiIO.numberOfInputDevices(); i++) {
+	// 	if(midiIO.getInputDeviceName(i).equals("In")){
+	// 		MIDIINCH = i;
+	// 		break;
+	// 	}
+	// }
+	// 
+	// for (int i=0; i<midiIO.numberOfOutputDevices(); i++) {
+	// 	if(midiIO.getOutputDeviceName(i).equals("Bus 1")){
+	// 		MIDIOUTCH = i;
+	// 		break;
+	// 	}
+	// }
 	
 	//open the first midi channel of the first device
-	midiIO.openInput(MIDIINCH,0);
-	midiOut = midiIO.getMidiOut(MIDIOUTCH,0);
+	// midiIO.openInput(MIDIINCH,0);
+	// midiOut = midiIO.getMidiOut(MIDIOUTCH,0);
+
+	myBus = new MidiBus(this, "In", "Bus 1");
 	
 	// chord_thread = new ChordThread();
 	// chord_thread.start();
@@ -171,14 +179,15 @@ void setup() {
 	useMIDIGuide = false;
 	showKeys = true;
 	particle =false;
+	floatingnotes = false;
 	MIDIon = false;
 	MIDIchanY = MIDIchanZ = MIDIchanW = -1;
 	MIDIvalueY = MIDIvalueZ = MIDIvalueW = -1;
 	// for (String s : PFont.list()) {
 	// 	print(s+"\n");
 	// }
-	bigfont = createFont("EurostileLTStd-Ex2", 50);
-	smallfont = createFont("EurostileLTStd-Ex2",13);
+	bigfont = createFont("HelveticaNeue-Light", 50);
+	smallfont = createFont("HelveticaNeue-Light",13);
 }
 
 void keyPressed() {
@@ -231,6 +240,7 @@ void keyPressed() {
 					MIDIchanW += 1;
 				}									break;
 			case 'd': MIDIon = !MIDIon;				break;
+			case 'f': floatingnotes = !floatingnotes;	break;
 			default: break;
 		}		
 	}
@@ -261,59 +271,59 @@ void keyPressed() {
 // 	}
 // }
 
-void mouseDragged() {
-	// fire active notes while we glide
-	// for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-	// 	// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
-	// 	// 	abs(keys[i].ypos - mouseY) < keys[i].height/2) {
-	// 	// 	keys[i].temp = 60;
-	// 	// // } else {
-	// 	// 	// keys[i].temp = 20;
-	// 	// }
-	// 	if (!keys[i].isActiveGuide) {
-	// 		continue;
-	// 	}
-	// 	int dist = int(abs(keys[i].xpos - mouseX));
-	// 	if (dist < SPOTWID1) {
-	// 		if (dist < SPOTWID2) {
-	// 			keys[i].curB = int(keys[i].lowB +SPOTHI);
-	// 		} else {
-	// 			keys[i].curB = int(keys[i].lowB +
-	// 			 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
-	// 		}
-	// 	} else {
-	// 		keys[i].curB = keys[i].lowB;
-	// 	}
-	// }
-	
-	
-	Note note;
-	for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-		if (!keys[i].isActiveGuide) {
-			continue;
-		}
-		if (abs(keys[i].xpos+keys[i].width/2  - mouseX) < keys[i].width/2 && abs(keys[i].xpos+keys[i].width/2 - mouseXold) >= keys[i].width/2) {
-			// keys[i].curB = 60;
-			// print("hit");
-		// } else {
-			// keys[i].temp = 20;
-
-			int vel = int(mouseY/10f)+20;
-			note = new Note(i+21,vel,300);
-			
-			if (useFeedbackBar) {
-				feedBar[i].height = FEEDH + vel*FEEDRATIO;
-				feedBar[i].ypos = FEEDY - vel*FEEDRATIO;				
-			} else {
-				feedBar[i].curB = feedBar[i].lowB+vel/128 * 100;
-			}
-			// feedBar[pit-21].isOn = true;
-			
-		    midiOut.sendNote(note);
-		}
-	}
-	mouseXold = mouseX;
-}
+// void mouseDragged() {
+// 	// fire active notes while we glide
+// 	// for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+// 	// 	// if (abs(keys[i].xpos - mouseX) < keys[i].width/2 && 
+// 	// 	// 	abs(keys[i].ypos - mouseY) < keys[i].height/2) {
+// 	// 	// 	keys[i].temp = 60;
+// 	// 	// // } else {
+// 	// 	// 	// keys[i].temp = 20;
+// 	// 	// }
+// 	// 	if (!keys[i].isActiveGuide) {
+// 	// 		continue;
+// 	// 	}
+// 	// 	int dist = int(abs(keys[i].xpos - mouseX));
+// 	// 	if (dist < SPOTWID1) {
+// 	// 		if (dist < SPOTWID2) {
+// 	// 			keys[i].curB = int(keys[i].lowB +SPOTHI);
+// 	// 		} else {
+// 	// 			keys[i].curB = int(keys[i].lowB +
+// 	// 			 	SPOTHI*(SPOTWID1-dist)/(SPOTWID1-SPOTWID2));
+// 	// 		}
+// 	// 	} else {
+// 	// 		keys[i].curB = keys[i].lowB;
+// 	// 	}
+// 	// }
+// 	
+// 	
+// 	Note note;
+// 	for (int i = 0; i < keys.length; i ++ ) {
+// 		if (!keys[i].isActiveGuide) {
+// 			continue;
+// 		}
+// 		if (abs(keys[i].xpos+keys[i].width/2  - mouseX) < keys[i].width/2 && abs(keys[i].xpos+keys[i].width/2 - mouseXold) >= keys[i].width/2) {
+// 			// keys[i].curB = 60;
+// 			// print("hit");
+// 		// } else {
+// 			// keys[i].temp = 20;
+// 
+// 			int vel = int(mouseY/10f)+20;
+// 			note = new Note(i+21,vel,300);
+// 			
+// 			if (useFeedbackBar) {
+// 				feedBar[i].height = FEEDH + vel*FEEDRATIO;
+// 				feedBar[i].ypos = FEEDY - vel*FEEDRATIO;				
+// 			} else {
+// 				feedBar[i].curB = feedBar[i].lowB+vel/128 * 100;
+// 			}
+// 			// feedBar[pit-21].isOn = true;
+// 			
+// 		    midiOut.sendNote(note);
+// 		}
+// 	}
+// 	mouseXold = mouseX;
+// }
 
 void mousePressed() {
 	// Note note;
@@ -345,6 +355,7 @@ void draw() {
 	colorMode(HSB,100);
 	
 	// mouse test: find which key the mouse is on top of
+	// fill(0,0,0,50);
 	fill(0);
 	noStroke();
 	rect(0,0,SCREENW,SCREENH);
@@ -435,15 +446,17 @@ void draw() {
 			// chord_thread.updateChord(chordSet);
 	// }
 	colorMode(RGB,255);
-	tracker.display();
-	ps.run();
-
+	// if (fps % 2 == 0) {
+	tracker.display();		
+	// }
+	if (particle) {ps.run();}
+	
 	// if (particle) { ps.addParticle(mouseX,mouseY);}
 	
 	// draw hand bubble, if calibration exists
 	if (tracker.guide2x >0 && (!tracker.hand1y.isEmpty() && !tracker.hand2y.isEmpty())) {
 		// fill(200,200,200,50);
-		stroke(0);
+		noStroke();
 		float h1x = tracker.proj1;
 		float h1y = tracker.hand1y.getLast();
 		float h2x = tracker.proj2;
@@ -485,7 +498,8 @@ void draw() {
 				newMod = Math.max((newMod-30)/2,1);
 				newMod = Math.min(newMod,127);
 				MIDIvalueY = Math.round(newMod);
-				midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
+				// midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
+				myBus.sendControllerChange(1,MIDIchanY,MIDIvalueY);
 			}
 			
 			// send width/ open/close hand message?
@@ -499,14 +513,16 @@ void draw() {
 				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
 				newMod = Math.min(Math.max(newMod,0),127);
 				MIDIvalueW = Math.round(newMod);
-				midiOut.sendController(new Controller(MIDIchanW, MIDIvalueW));				
+				// midiOut.sendController(new Controller(MIDIchanW, MIDIvalueW));
+				myBus.sendControllerChange(1,MIDIchanW,MIDIvalueW);
 			}
 			
 			if (!playingHarp && MIDIchanZ>0) {
 				newMod = Math.min(127,
 					Math.max((Math.max(tracker.vel1,tracker.vel2)-100)*2.4,0));
 				MIDIvalueZ = Math.round(newMod);
-				midiOut.sendController(new Controller(MIDIchanZ, MIDIvalueZ));
+				// midiOut.sendController(new Controller(MIDIchanZ, MIDIvalueZ));
+				myBus.sendControllerChange(1,MIDIchanZ,MIDIvalueZ);
 			}
 		}
 		
@@ -514,40 +530,42 @@ void draw() {
 		
 		//firing notes if they overlap:
 		
-		Note note;
+		// Note note;
 		for (int i = 0; i < keys.length; i ++ ) {
 			if (!keys[i].isActiveGuide) {
 					continue;
 			}
 			
 			if (skipframes == 0 &&
-				abs(keys[i].xpos+keys[i].width/2  - h1x) < keys[i].width/2 &&
+				abs(keys[i].xpos+keys[i].width/2 - h1x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h1xold) >= keys[i].width/2 
 				&& h1y < SCREENH-80 && playingHarp) {
-
-				// int vel = int(mouseY/10f)+20;
-				note = new Note(i+21,vel1,400);
-
+				
+				// note = new Note(i+21,vel1,400);
+	
 				feedBar[i].height = FEEDH + vel1*2;
 				feedBar[i].ypos = FEEDY - vel1*2;
 				// feedBar[i].isOn = true;
 				// print(str(i+21)+" "+str(vel1)+"\n");
-			    midiOut.sendNote(note);
+				// midiOut.sendNote(note);
+				myBus.sendNoteOn(1,i+21,vel1);
+				myBus.sendNoteOff(1,i+21,vel1);
 			}
 		
 			if (skipframes == 0 &&
-				abs(keys[i].xpos+keys[i].width/2-h2x) < keys[i].width/2 &&
+				abs(keys[i].xpos+keys[i].width/2 - h2x) < keys[i].width/2 &&
 			 	abs(keys[i].xpos+keys[i].width/2 - h2xold) >= keys[i].width/2
 				&& h2y < SCREENH-80 && playingHarp) {
-
+	
 				// int vel = int(mouseY/10f)+20;
-				note = new Note(i+21,vel2,400);
-
+				// note = new Note(i+21,vel2,400);
+	
 				feedBar[i].height = FEEDH + vel2*2;
 				feedBar[i].ypos = FEEDY - vel2*2;
 				// feedBar[i].isOn = true;
-			
-			    midiOut.sendNote(note);
+		    	// midiOut.sendNote(note);
+				myBus.sendNoteOn(1,i+21,vel2);
+				myBus.sendNoteOff(1,i+21,vel2);
 			}
 			
 			float dist = Math.min(abs(keys[i].xpos - h1x),
@@ -568,15 +586,25 @@ void draw() {
 		h1xold=h1x;
 		h2xold=h2x;
 	}
+	
+	// ======================= count frames per sec ========================
+	long now = System.currentTimeMillis();
+	if (lastS != now/1000) {
+		disfps = fps;
+		fps = 0;
+		lastS = now/1000;
+	}
+	fps += 1;
 	printLabels();
 }
 
 void printLabels() {
+	noStroke();
 	if (tracker.recording) {
-		stroke(color(200,200,200));
+		// stroke(color(200,200,200));
+		fill(color(200,200,200));
 		text("Recording",SCREENW/2,30);
 	}
-	noStroke();
 	fill(0);
 	rect(SCREENW,480,SCREENW+640,SCREENH);
 	fill(color(200,200,200));
@@ -584,8 +612,10 @@ void printLabels() {
 	text("Y channel = " + MIDIchanY + "\n", SCREENW,506);
 	text("Z channel = " + MIDIchanZ + "\n", SCREENW,518);
 	text("W channel = " + MIDIchanW + "\n", SCREENW,530);
+	text("fps:"+str(disfps),SCREENW,542);
+	
 	textFont(bigfont);
-	fill(color(256,256,256),100);
+	fill(color(220,220,220));
 	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",180,SCREENH-245);}
 	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",180,SCREENH-200);}
 	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",180,SCREENH-155);}
@@ -593,9 +623,14 @@ void printLabels() {
 }
 
 
-void noteOn(Note note, int device, int channel){
-  int vel = note.getVelocity();
-  int pit = note.getPitch();
+void noteOn(int channel, int pit, int vel){
+	//   int vel = note.getVelocity();
+	//   int pit = note.getPitch();
+	// 
+	// //send note through to the instrument
+	// midiOut.sendNoteOn(note);
+	myBus.sendNoteOn(channel, pit, vel);
+	
 	keys[pit-21].isOn = true;
 	chordSet.add(pit-21);
 	// print(chordSet);
@@ -627,32 +662,38 @@ void noteOn(Note note, int device, int channel){
 	// chord_thread.updateChord(chordSet);
 }
 
-void noteOff(Note note, int device, int channel){
-  	int pit = note.getPitch();
-	int vel = note.getVelocity();
-	keys[pit-21].isOn = false;
-	chordSet.remove(pit-21);	
-	feedBar[pit-21].isOn = false;
-	if ((feedBar[pit-21].height - FEEDH)/2 == vel) {
-		// feedBar[pit-21].blackOut();
-		feedBar[pit-21].height = feedBar[pit-21].oldHeight;
-		feedBar[pit-21].ypos = FEEDY-feedBar[pit-21].height+FEEDH;
-	}
-	
-	if (useChordGuide) {
-		for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
-			//    keys[i].drive();
-			keys[i].isActiveGuide = false;
-			Iterator chorditer = chordSet.iterator();
-			while(chorditer.hasNext()) {
-				Object n = chorditer.next();
-				int nint =((Number)n).intValue();
-				if (i == nint) { keys[i].isActiveGuide = false; break; }
-				if ((i - nint)%12 == 0) {
-					keys[i].isActiveGuide = true;
-					break;
+void noteOff(int channel, int pit, int vel){
+	if (!floatingnotes) {
+		myBus.sendNoteOff(channel, pit, vel);
+		keys[pit-21].isOn = false;
+		chordSet.remove(pit-21);
+		feedBar[pit-21].isOn = false;
+		if ((feedBar[pit-21].height - FEEDH)/2 == vel) {
+			// feedBar[pit-21].blackOut();
+			feedBar[pit-21].height = feedBar[pit-21].oldHeight;
+			feedBar[pit-21].ypos = FEEDY-feedBar[pit-21].height+FEEDH;
+		}
+
+		if (useChordGuide) {
+			for (int i = 0; i < keys.length; i ++ ) { // Run each Car using a for loop.
+				//    keys[i].drive();
+				keys[i].isActiveGuide = false;
+				Iterator chorditer = chordSet.iterator();
+				while(chorditer.hasNext()) {
+					Object n = chorditer.next();
+					int nint =((Number)n).intValue();
+					if (i == nint) { keys[i].isActiveGuide = false; break; }
+					if ((i - nint)%12 == 0) {
+						keys[i].isActiveGuide = true;
+						break;
+					}
 				}
-			}
-		}		
+			}		
+		}
+		
 	}
+
+	//   	int pit = note.getPitch();
+	// int vel = note.getVelocity();
+
 }

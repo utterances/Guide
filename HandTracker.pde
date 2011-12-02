@@ -383,10 +383,10 @@ class HandTracker {
 		noStroke();
 		rect(0,0,200,200);
 		fill(230,200,200);
-		if (fps == 2) {
-			text("fps:"+str(disfps),viewx,viewy+10);
-			text(str(CVThreshold),viewx,viewy+30);			
-		}
+		// if (fps == 2) {
+		// 	text("fps:"+str(disfps),viewx,viewy+10);
+		// 	text(str(CVThreshold),viewx,viewy+30);			
+		// }
 		if (markMode == 2) {
 			text("mark first point", 0, 60);
 		} else if (markMode == 1) {
