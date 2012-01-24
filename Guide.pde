@@ -82,8 +82,8 @@ MidiDisplay songGuide;
 boolean songPlaying, playingHarp, useChordGuide,useMIDIGuide, showKeys,particle;
 boolean floatingnotes;
 boolean MIDIon;
-int MIDIchanY, MIDIchanZ, MIDIchanW;
-int MIDIvalueY, MIDIvalueZ, MIDIvalueW;
+int MIDIchanY, MIDIchanX, MIDIchanZ, MIDIchanW;
+int MIDIvalueY, MIDIvalueX, MIDIvalueZ, MIDIvalueW;
 
 void setup() {
 	// colorMode(HSB,100);
@@ -181,8 +181,8 @@ void setup() {
 	particle =false;
 	floatingnotes = false;
 	MIDIon = false;
-	MIDIchanY = MIDIchanZ = MIDIchanW = -1;
-	MIDIvalueY = MIDIvalueZ = MIDIvalueW = -1;
+	MIDIchanY = MIDIchanZ = MIDIchanW = MIDIchanX = -1;
+	MIDIvalueY = MIDIvalueZ = MIDIvalueW = MIDIchanX = -1;
 	// for (String s : PFont.list()) {
 	// 	print(s+"\n");
 	// }
@@ -218,7 +218,7 @@ void keyPressed() {
 			case '1': 
 				if (MIDIchanY < 0) {
 					MIDIchanY = 16;
-				} else if (MIDIchanY == 18) {
+				} else if (MIDIchanY == 17) {
 					MIDIchanY = -1;
 				} else {
 					MIDIchanY += 1;
@@ -226,7 +226,7 @@ void keyPressed() {
 			case '2': 
 				if (MIDIchanZ < 0) {
 					MIDIchanZ = 16;
-				} else if (MIDIchanZ == 18) {
+				} else if (MIDIchanZ == 17) {
 					MIDIchanZ = -1;
 				} else {
 					MIDIchanZ += 1;
@@ -234,11 +234,19 @@ void keyPressed() {
 			case '3': 
 				if (MIDIchanW < 0) {
 					MIDIchanW = 16;
-				} else if (MIDIchanW == 18) {
+				} else if (MIDIchanW == 17) {
 					MIDIchanW = -1;
 				} else {
 					MIDIchanW += 1;
 				}									break;
+			case '4': 
+				if (MIDIchanX < 0) {
+					MIDIchanX = 16;
+				} else if (MIDIchanX == 17) {
+					MIDIchanX = -1;
+				} else {
+					MIDIchanX += 1;
+				}									break;		
 			case 'd': MIDIon = !MIDIon;				break;
 			case 'f': floatingnotes = !floatingnotes;	break;
 			default: break;
@@ -501,14 +509,24 @@ void draw() {
 				// midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
 				myBus.sendControllerChange(1,MIDIchanY,MIDIvalueY);
 			}
-			
+
+			if (MIDIchanX >0) {
+				newMod = 
+					Math.max(tracker.hand1x.getLast(),tracker.hand2x.getLast());
+				newMod = Math.max(140-newMod/3,1);
+				newMod = Math.min(newMod,127);
+				MIDIvalueX = Math.round(newMod);
+				// midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
+				myBus.sendControllerChange(1,MIDIchanX,MIDIvalueX);
+			}
+
 			// send width/ open/close hand message?
 			if (MIDIchanW>0 && (tracker.on1 || tracker.on2)) {
 				if (tracker.hand1y.getLast()>tracker.hand2y.getLast() 
 					&& tracker.on1) {
-					newMod = tracker.wid1*1.2-40;
+					newMod = tracker.wid1*1.5-40;
 				} else {
-					newMod = tracker.wid2*1.2-40;
+					newMod = tracker.wid2*1.5-40;
 				}
 				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
 				newMod = Math.min(Math.max(newMod,0),127);
@@ -603,7 +621,7 @@ void printLabels() {
 	if (tracker.recording) {
 		// stroke(color(200,200,200));
 		fill(color(200,200,200));
-		text("Recording",SCREENW/2,30);
+		text("Recording",SCREENW,30);
 	}
 	fill(0);
 	rect(SCREENW,480,SCREENW+640,SCREENH);
@@ -612,16 +630,34 @@ void printLabels() {
 	text("Y channel = " + MIDIchanY + "\n", SCREENW,506);
 	text("Z channel = " + MIDIchanZ + "\n", SCREENW,518);
 	text("W channel = " + MIDIchanW + "\n", SCREENW,530);
-	text("fps:"+str(disfps),SCREENW,542);
+	text("X channel = " + MIDIchanX + "\n", SCREENW,542);
+	text("fps:"+str(disfps),SCREENW,554);
 	
 	textFont(bigfont);
 	fill(color(220,220,220,200));
-	if (MIDIchanY>0) {text("Y:"+MIDIvalueY+"\n",230,SCREENH-245);}
+	if (MIDIchanY>0) {
+		text("Y:"+MIDIvalueY+"\n",230,SCREENH-245);
+		fill(color(256,220,220));
+		rect(SCREENW-150,300-MIDIvalueY*2,40,MIDIvalueY*2);
+	}
 	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",230,SCREENH-200);}
 	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",230,SCREENH-155);}
+	if (MIDIchanX>0) {text("X:"+MIDIvalueX+"\n",230,SCREENH-110);}
 	textFont(smallfont);
 }
 
+// void printMIDIchanbars() {
+// 	noStroke();
+// 	if (MIDIchanY>0) {
+// 		if (MIDIchanY==16) {	// filter
+// 			
+// 		}
+// 		text("Y:"+MIDIvalueY+"\n",230,SCREENH-245);
+// 		
+// 	}
+// 	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",230,SCREENH-200);}
+// 	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",230,SCREENH-155);}	
+// }
 
 void noteOn(int channel, int pit, int vel){
 	//   int vel = note.getVelocity();

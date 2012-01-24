@@ -55,12 +55,10 @@ public class DataProcThread extends Thread {
 	private final String BASEPATH = "/Users/Tim/Documents/Processing/Data/";
   	private boolean running;	     // Is the thread running?
 	PImage img, depth;
-	// String outString;
 	long time;
 	boolean fresh;
   
-  // Constructor, create the thread
-  // It is not running by default
+  // Constructor, create the thread, not running by default
 	public DataProcThread() {
 		running = false;
 	}
@@ -106,11 +104,10 @@ public class DataProcThread extends Thread {
 		}
 	}
 	
-	// Our method that quits the thread
-	  	public void quit() {
-	    	System.out.println("Quitting."); 
-	    	running = false;  // Setting running to false ends the loop in run()
-	    // IUn case the thread is waiting. . .
-	    interrupt();
+  	public void quit() {
+    	System.out.println("Quitting."); 
+    	running = false;  // Setting running to false ends the loop in run()
+    // IUn case the thread is waiting. . .
+    interrupt();
 	}
 }
