@@ -513,7 +513,7 @@ void draw() {
 			if (MIDIchanX >0) {
 				newMod = 
 					Math.max(tracker.hand1x.getLast(),tracker.hand2x.getLast());
-				newMod = Math.max(140-newMod/3,1);
+				newMod = Math.max(200-newMod/2.2,1);
 				newMod = Math.min(newMod,127);
 				MIDIvalueX = Math.round(newMod);
 				// midiOut.sendController(new Controller(MIDIchanY, MIDIvalueY));
@@ -524,9 +524,9 @@ void draw() {
 			if (MIDIchanW>0 && (tracker.on1 || tracker.on2)) {
 				if (tracker.hand1y.getLast()>tracker.hand2y.getLast() 
 					&& tracker.on1) {
-					newMod = tracker.wid1*1.5-40;
+					newMod = tracker.wid1*1.6-45;
 				} else {
-					newMod = tracker.wid2*1.5-40;
+					newMod = tracker.wid2*1.6-45;
 				}
 				// newMod = Math.round(Math.max(tracker.wid1,tracker.wid2)*1.2-30);
 				newMod = Math.min(Math.max(newMod,0),127);
@@ -638,11 +638,15 @@ void printLabels() {
 	if (MIDIchanY>0) {
 		text("Y:"+MIDIvalueY+"\n",230,SCREENH-245);
 		fill(color(256,220,220));
-		rect(SCREENW-150,300-MIDIvalueY*2,40,MIDIvalueY*2);
+		rect(SCREENW-200,400-MIDIvalueY*3,40,MIDIvalueY*3);
 	}
 	if (MIDIchanZ>0) {text("Z:"+MIDIvalueZ+"\n",230,SCREENH-200);}
 	if (MIDIchanW>0) {text("W:"+MIDIvalueW+"\n",230,SCREENH-155);}
-	if (MIDIchanX>0) {text("X:"+MIDIvalueX+"\n",230,SCREENH-110);}
+	if (MIDIchanX>0) {
+		text("X:"+MIDIvalueX+"\n",230,SCREENH-110);
+		fill(color(256,220,220));
+		rect(200, 70, MIDIvalueX*6, 50);
+	}
 	textFont(smallfont);
 }
 
